@@ -7,11 +7,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 
 public class ATMClient {
 
     private static SecretKey oldSharedKey;
+    private static SecretKey newMasterKey;
     public static void main(String[] args) throws IOException {
 
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
@@ -26,17 +28,56 @@ public class ATMClient {
 
         ) {
 
+            Scanner input = new Scanner(System.in);
             Object fromBankServer, fromClient="";
 
 
-            //Sending the Client public key
-            out.writeObject(fromClient);
-
-
-            //Receiving Public key of KDC & Sending my ID
             if ((fromBankServer = in.readObject()) != null) {
 
-            }//Sent the ID
+                //Splitting the data
+                String[] parts = ((String) fromBankServer).split(",");
+                String bankID = parts[0];
+                String bankNonce = parts[1];
+
+                //Printing the result
+                System.out.println("Got bank Id: "+bankID);
+                System.out.println("Got bank Nonce: "+bankNonce);
+
+                //Creating the master key
+                String masterKeyString = KeyCipher.generateMasterKeyString();
+                newMasterKey = KeyCipher.createSecretKey(masterKeyString);
+                System.out.println("The master key is: "+newMasterKey);
+                //Generating a nonce
+                int atmClientNonce = KeyCipher.generateNonce();
+
+                //Sending message 2 | Encrypted with the old Shared key
+                fromClient = KeyCipher.encrypt (oldSharedKey,atmClientNonce+","+masterKeyString);
+                out.writeObject(fromClient);
+
+            }
+
+            if ((fromBankServer = in.readObject()) != null) {
+
+                fromBankServer = KeyCipher.decrypt(newMasterKey,(String)fromBankServer);
+
+                System.out.println("Checking ATM original nonce: "+fromBankServer);
+            }
+
+
+
+//            //Isolate into userVerification method
+//            System.out.println("Enter your username: ");
+//            String userName = input.nextLine();
+//            System.out.println("Enter your password: ");
+//            String password = input.nextLine();
+//
+//            fromClient = userName +","+password;
+//
+//            //Sending the Client public key
+//            out.writeObject(fromClient);
+//            //Isolate into userVerification method
+
+
 
 
         } catch (UnknownHostException e) {
@@ -47,8 +88,11 @@ public class ATMClient {
                     hostName);
             System.exit(1);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }// end of main
+
+
+
 
 }

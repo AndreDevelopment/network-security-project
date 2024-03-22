@@ -8,6 +8,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Random;
+import java.util.stream.Collectors;
 import javax.crypto.Mac;
 
 public class KeyCipher {
@@ -19,6 +20,19 @@ public class KeyCipher {
     public static SecretKey createSecretKey(String keyBytes) {
         //String secretString = "thisismysecretkey24bytes";
         return new SecretKeySpec(keyBytes.getBytes(), "AES");
+    }
+
+    public static String generateMasterKeyString() {
+
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        int length = 24;
+
+        //Using Streams API to generate a master key string
+        return random.ints(length, 0, alphabet.length())
+                .mapToObj(alphabet::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
     public static byte[] convertToByteArray(Object obj){
 
