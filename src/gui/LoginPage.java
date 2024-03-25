@@ -50,10 +50,24 @@ public class LoginPage extends Application {
         // Login button
         Button loginButton = new Button("Login");
         loginButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
+        loginButton.setOnAction(e -> {
+            // Create an instance of HomePage and show its stage
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Register button
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
+        registerButton.setOnAction(e -> {
+            // Create an instance of RegisterPage and show its stage
+            RegisterPage registerPage = new RegisterPage();
+            Stage registerStage = new Stage();
+            registerPage.start(registerStage);
+        });
 
         // Adding nodes to the login VBox
         loginBox.getChildren().addAll(titleLabel, usernameBox, passwordBox, loginButton, registerButton);
@@ -84,5 +98,3 @@ public class LoginPage extends Application {
         launch(args);
     }
 }
-
-
