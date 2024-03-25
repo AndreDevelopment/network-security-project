@@ -8,7 +8,7 @@
     "java.configuration.runtimes": [
 
         {
-            "name": "JavaFX-22",
+            "name": "JavaSE-21",
             "path": "/Users/arshroopsandhu/Desktop/javafx-sdk-22",
             "default": false
         }
