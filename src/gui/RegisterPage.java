@@ -18,15 +18,15 @@ public class RegisterPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("NEW USER REGISTERATION ");
+        primaryStage.setTitle("NEW USER REGISTRATION");
 
-        // Creating a VBox layout for login components
-        VBox loginBox = new VBox();
-        loginBox.setSpacing(20); // Increased spacing between components
-        loginBox.setAlignment(Pos.CENTER);
+        // Creating a VBox layout for registration components
+        VBox registrationBox = new VBox();
+        registrationBox.setSpacing(20); // Increased spacing between components
+        registrationBox.setAlignment(Pos.CENTER);
 
         // Title
-        Label titleLabel = new Label("NEW USER REGISTERATION");
+        Label titleLabel = new Label("NEW USER REGISTRATION");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;"); // Making the title bold
         titleLabel.setAlignment(Pos.TOP_CENTER); // Aligning the title towards the top
         titleLabel.setPadding(new Insets(20, 0, 0, 0)); // Adding padding to the top
@@ -67,13 +67,20 @@ public class RegisterPage extends Application {
         reEnterPassBoxField.setMaxWidth(300); // Limiting width to fit inside the rectangle
         reEnterPassBox.getChildren().addAll(reEnterPassBoxLabel, reEnterPassBoxField);
 
-
         // Register button
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
+        registerButton.setOnAction(e -> {
+            // Create an instance of LoginPage and show its stage
+            LoginPage loginPage = new LoginPage();
+            Stage loginStage = new Stage();
+            loginPage.start(loginStage);
+            // Close the current stage (RegisterPage)
+            primaryStage.close();
+        });
 
-        // Adding nodes to the login VBox
-        loginBox.getChildren().addAll(titleLabel, nameBox, usernameBox, passwordBox, reEnterPassBox, registerButton);
+        // Adding nodes to the registration VBox
+        registrationBox.getChildren().addAll(titleLabel, nameBox, usernameBox, passwordBox, reEnterPassBox, registerButton);
 
         // Creating a blue background
         Rectangle blueBackground = new Rectangle(1000, 800, Color.web("#c6e2ff"));
@@ -86,7 +93,7 @@ public class RegisterPage extends Application {
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
-        root.getChildren().addAll(blueBackground, whiteRectangle, loginBox);
+        root.getChildren().addAll(blueBackground, whiteRectangle, registrationBox);
 
         // Centering the white rectangle
         StackPane.setAlignment(whiteRectangle, Pos.CENTER);
@@ -101,5 +108,3 @@ public class RegisterPage extends Application {
         launch(args);
     }
 }
-
-

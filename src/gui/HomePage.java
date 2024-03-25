@@ -53,6 +53,14 @@ public class HomePage extends Application {
         withdrawButton.setStyle(buttonStyle);
         balanceButton.setStyle(buttonStyle);
 
+        // Event handler for the "Deposit" button
+        depositButton.setOnAction(e -> {
+            // Create an instance of DepositPage and show its stage
+            DepositPage depositPage = new DepositPage();
+            Stage depositStage = new Stage();
+            depositPage.start(depositStage);
+        });
+
         // Adding nodes to the home VBox
         homeBox.getChildren().addAll(avatarCircle, actionLabel, buttonBox);
         buttonBox.getChildren().addAll(depositButton, withdrawButton, balanceButton);
