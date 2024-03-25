@@ -13,6 +13,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class HomePage extends Application {
+    private Label actionLabel; // Declare actionLabel as an instance variable
 
     @Override
     public void start(Stage primaryStage) {
@@ -37,7 +38,7 @@ public class HomePage extends Application {
         avatarCircle.setStroke(Color.BLACK);
 
         // Text: "Select an action to perform"
-        Label actionLabel = new Label("Select an action to perform");
+        actionLabel = new Label("Select an action to perform");
         actionLabel.setFont(new Font(16));
 
         // Buttons
@@ -53,13 +54,10 @@ public class HomePage extends Application {
         withdrawButton.setStyle(buttonStyle);
         balanceButton.setStyle(buttonStyle);
 
-        // Event handler for the "Deposit" button
-        depositButton.setOnAction(e -> {
-            // Create an instance of DepositPage and show its stage
-            DepositPage depositPage = new DepositPage();
-            Stage depositStage = new Stage();
-            depositPage.start(depositStage);
-        });
+        // Event handlers for the buttons
+        depositButton.setOnAction(e -> showDepositPage(primaryStage));
+        withdrawButton.setOnAction(e -> showWithdrawalPage(primaryStage));
+        balanceButton.setOnAction(e -> showBalanceInquiryPage(primaryStage));
 
         // Adding nodes to the home VBox
         homeBox.getChildren().addAll(avatarCircle, actionLabel, buttonBox);
@@ -75,6 +73,24 @@ public class HomePage extends Application {
         Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
+    }
+
+    // Method to update the content for the deposit page
+    private void showDepositPage(Stage primaryStage) {
+        DepositPage depositPage = new DepositPage();
+        depositPage.start(primaryStage);
+    }
+
+    // Method to update the content for the withdrawal page
+    private void showWithdrawalPage(Stage primaryStage) {
+        WithdrawalPage withdrawalPage = new WithdrawalPage();
+        withdrawalPage.start(primaryStage);
+    }
+
+    // Method to update the content for the balance inquiry page
+    private void showBalanceInquiryPage(Stage primaryStage) {
+        BalanceInquires balanceInquires = new BalanceInquires();
+        balanceInquires.start(primaryStage);
     }
 
     public static void main(String[] args) {

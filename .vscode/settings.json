@@ -9,8 +9,8 @@
 
         {
             "name": "JavaSE-21",
-            "path": "/Users/arshroopsandhu/Desktop/javafx-sdk-22",
-            "default": false
+            "path": "/Users/arshroopsandhu/Desktop/jdk-21.0.2.jdk/Contents/Home/lib",
+            "default": true
         }
     ]
 }

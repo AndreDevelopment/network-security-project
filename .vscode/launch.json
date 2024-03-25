@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "RegisterPage",
+            "request": "launch",
+            "mainClass": "gui.RegisterPage",
+            "projectName": "network-security-project_4b064422"
+        },
+        {
+            "type": "java",
             "name": "DepositPage",
             "request": "launch",
             "mainClass": "gui.DepositPage",
@@ -35,7 +42,7 @@
             "type": "java",
             "name": "login",
             "request": "launch",
-            "mainClass": "gui.login",
+            "mainClass": "gui.RegisterPage",
             "projectName": "network-security-project_4b064422",
             "vmArgs": "--module-path /Users/arshroopsandhu/Desktop/javafx-sdk-22/lib --add-modules javafx.controls,javafx.fxml"
         }
