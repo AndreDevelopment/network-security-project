@@ -12,16 +12,16 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-public class DepositPage extends Application {
+public class WithdrawalPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("DEPOSIT");
+        primaryStage.setTitle("WITHDRAWAL");
 
-        // Creating a VBox layout for deposit page components
-        VBox depositBox = new VBox();
-        depositBox.setSpacing(20); // Increased spacing between components
-        depositBox.setAlignment(Pos.CENTER);
+        // Creating a VBox layout for withdrawal page components
+        VBox withdrawalBox = new VBox();
+        withdrawalBox.setSpacing(20); // Increased spacing between components
+        withdrawalBox.setAlignment(Pos.CENTER);
 
         // Creating a blue rectangle background covering the scene
         Rectangle blueBackground = new Rectangle(800, 600, Color.web("#c6e2ff"));
@@ -39,8 +39,8 @@ public class DepositPage extends Application {
         // Creating a blue rectangle for "Current Balance"
         Rectangle currentBalanceRectangle = new Rectangle(598, 70, Color.web("#c6e2ff"));
 
-        // Title: "DEPOSIT"
-        Label titleLabel = new Label("DEPOSIT");
+        // Title: "WITHDRAWAL"
+        Label titleLabel = new Label("WITHDRAWAL");
         titleLabel.setFont(new Font(24));
         titleLabel.setTextFill(Color.BLACK); // Setting text color to black
 
@@ -52,28 +52,29 @@ public class DepositPage extends Application {
         Label currentBalanceLabel = new Label("Current Balance");
         currentBalanceLabel.setFont(new Font(16));
 
-        // Label: "Deposit amount"
-        Label depositAmountLabel = new Label("Enter amount to deposit");
-        depositAmountLabel.setFont(new Font(16));
+        // Label: "Withdrawal amount"
+        Label withdrawalAmountLabel = new Label("Enter amount to withdraw");
+        withdrawalAmountLabel.setFont(new Font(16));
 
-        // Text field for deposit amount
-        TextField depositMoneyField = new TextField();
-        depositMoneyField.setPromptText("Enter Deposit Amount");
-        depositMoneyField.setMaxWidth(200);
+        // Text field for withdrawal amount
+        TextField withdrawalMoneyField = new TextField();
+        withdrawalMoneyField.setPromptText("Enter Withdrawal Amount");
+        withdrawalMoneyField.setPromptText("Enter Withdrawal Amount");
+        withdrawalMoneyField.setMaxWidth(200);
 
-        // Button: "Deposit"
-        Button depositButton = new Button("Deposit");
-        depositButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+        // Button: "Withdrawal"
+        Button withdrawalButton = new Button("Withdraw");
+        withdrawalButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
 
-        // Adding nodes to the deposit VBox
-        depositBox.getChildren().addAll(titlePane, currentBalanceLabel, depositAmountLabel, depositMoneyField, depositButton);
+        // Adding nodes to the withdrawal VBox
+        withdrawalBox.getChildren().addAll(titlePane, currentBalanceLabel, withdrawalAmountLabel, withdrawalMoneyField, withdrawalButton);
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
-        root.getChildren().addAll(blueBackground, whiteRectangle, depositBox);
+        root.getChildren().addAll(blueBackground, whiteRectangle, withdrawalBox);
 
-        // Centering the deposit VBox
-        StackPane.setAlignment(depositBox, Pos.CENTER);
+        // Centering the withdrawal VBox
+        StackPane.setAlignment(withdrawalBox, Pos.CENTER);
 
         Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
