@@ -11,8 +11,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class HomePage extends Application {
+    private Label actionLabel; // Declare actionLabel as an instance variable
 
     @Override
     public void start(Stage primaryStage) {
@@ -21,7 +24,7 @@ public class HomePage extends Application {
         // Creating a VBox layout for home page components
         VBox homeBox = new VBox();
         homeBox.setSpacing(20); // Increased spacing between components
-        homeBox.setAlignment(Pos.CENTER);
+        homeBox.setAlignment(Pos.CENTER); // Center align the components
 
         // Creating a blue background
         Rectangle blueBackground = new Rectangle(800, 600, Color.web("#c6e2ff"));
@@ -32,12 +35,23 @@ public class HomePage extends Application {
         whiteRectangle.setArcWidth(20); // Adding border radius
         whiteRectangle.setArcHeight(20); // Adding border radius
 
-        // Creating a circle for human avatar
-        Circle avatarCircle = new Circle(50, Color.LIGHTBLUE); // Sample color
-        avatarCircle.setStroke(Color.BLACK);
+        // Load the avatar image
+        Image avatarImage = new Image(getClass().getResourceAsStream("/gui/images/avatar.png"));
+
+        // Create an ImageView for the avatar image
+        ImageView avatarImageView = new ImageView(avatarImage);
+        avatarImageView.setFitWidth(100); // Set the width of the image
+        avatarImageView.setFitHeight(100); // Set the height of the image
+
+        // Optional: Set the circle clip to make the image appear as a circle
+        avatarImageView.setClip(new Circle(50, 50, 50));
+
+        // Optional: Add a border to the image
+        avatarImageView.setStyle("-fx-border-color: black; -fx-border-width: 2;");
+
 
         // Text: "Select an action to perform"
-        Label actionLabel = new Label("Select an action to perform");
+        actionLabel = new Label("Select an action to perform");
         actionLabel.setFont(new Font(16));
 
         // Buttons
@@ -53,16 +67,13 @@ public class HomePage extends Application {
         withdrawButton.setStyle(buttonStyle);
         balanceButton.setStyle(buttonStyle);
 
-        // Event handler for the "Deposit" button
-        depositButton.setOnAction(e -> {
-            // Create an instance of DepositPage and show its stage
-            DepositPage depositPage = new DepositPage();
-            Stage depositStage = new Stage();
-            depositPage.start(depositStage);
-        });
+        // Event handlers for the buttons
+        depositButton.setOnAction(e -> showDepositPage(primaryStage));
+        withdrawButton.setOnAction(e -> showWithdrawalPage(primaryStage));
+        balanceButton.setOnAction(e -> showBalanceInquiryPage(primaryStage));
 
         // Adding nodes to the home VBox
-        homeBox.getChildren().addAll(avatarCircle, actionLabel, buttonBox);
+        homeBox.getChildren().addAll(avatarImageView, actionLabel, buttonBox);
         buttonBox.getChildren().addAll(depositButton, withdrawButton, balanceButton);
 
         // Creating a StackPane to layer the background and content
@@ -76,6 +87,26 @@ public class HomePage extends Application {
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
     }
+
+    // Method to update the content for the deposit page
+    private void showDepositPage(Stage primaryStage) {
+        DepositPage depositPage = new DepositPage();
+        depositPage.start(primaryStage);
+    }
+
+    // Method to update the content for the withdrawal page
+    private void showWithdrawalPage(Stage primaryStage) {
+        WithdrawalPage withdrawalPage = new WithdrawalPage();
+        withdrawalPage.start(primaryStage);
+    }
+
+    // Method to update the content for the balance inquiry page
+    private void showBalanceInquiryPage(Stage primaryStage) {
+        BalanceInquires balanceInquires = new BalanceInquires();
+        balanceInquires.start(primaryStage);
+    }
+
+    // Other methods...
 
     public static void main(String[] args) {
         launch(args);

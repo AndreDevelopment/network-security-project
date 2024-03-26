@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -15,19 +14,27 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-public class DepositPage extends Application {
+public class BalanceInquires extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("DEPOSIT");
+        primaryStage.setTitle("BALANCE INQUIRES");
 
-        // Creating a VBox layout for deposit page components
-        VBox depositBox = new VBox();
-        depositBox.setSpacing(20); // Increased spacing between components
-        depositBox.setAlignment(Pos.CENTER);
+        // Creating a VBox layout for balanceInquires page components
+        VBox balanceInquiresBox = new VBox();
+        balanceInquiresBox.setSpacing(20); // Increased spacing between components
+        balanceInquiresBox.setAlignment(Pos.CENTER);
 
         // Creating a blue rectangle background covering the scene
         Rectangle blueBackground = new Rectangle(800, 600, Color.web("#c6e2ff"));
+
+        // Load the home image
+        Image homeImage = new Image(getClass().getResourceAsStream("/gui/images/home.png"));
+
+        // Create an ImageView for the home image
+        ImageView homeImageView = new ImageView(homeImage);
+        homeImageView.setFitWidth(30); // Set the width of the image
+        homeImageView.setFitHeight(30); // Set the height of the image
 
         // Creating a white rectangle background with border radius
         Rectangle whiteRectangle = new Rectangle(600, 400);
@@ -42,16 +49,8 @@ public class DepositPage extends Application {
         // Creating a blue rectangle for "Current Balance"
         Rectangle currentBalanceRectangle = new Rectangle(598, 70, Color.web("#c6e2ff"));
 
-        // Load the home image
-        Image homeImage = new Image(getClass().getResourceAsStream("/gui/images/home.png"));
-
-        // Create an ImageView for the home image
-        ImageView homeImageView = new ImageView(homeImage);
-        homeImageView.setFitWidth(30); // Set the width of the image
-        homeImageView.setFitHeight(30); // Set the height of the image
-
-        // Title: "DEPOSIT"
-        Label titleLabel = new Label("DEPOSIT");
+        // Title: "CURRENT BALANCE"
+        Label titleLabel = new Label("CURRENT BALANCE");
         titleLabel.setFont(new Font(24));
         titleLabel.setTextFill(Color.BLACK); // Setting text color to black
 
@@ -63,28 +62,49 @@ public class DepositPage extends Application {
         Label currentBalanceLabel = new Label("Current Balance");
         currentBalanceLabel.setFont(new Font(16));
 
-        // Label: "Deposit amount"
-        Label depositAmountLabel = new Label("Enter amount to deposit");
-        depositAmountLabel.setFont(new Font(16));
+        // Button: "Home screen"
+        Button homescreenButton = new Button("Home Screen");
+        homescreenButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
 
-        // Text field for deposit amount
-        TextField depositMoneyField = new TextField();
-        depositMoneyField.setPromptText("Enter Deposit Amount");
-        depositMoneyField.setMaxWidth(200);
+        // Event handler for the "Home Screen" button
+        homescreenButton.setOnAction(e -> {
+            // Create an instance of HomePage and show its stage
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
 
-        // Button: "Deposit"
-        Button depositButton = new Button("Deposit");
-        depositButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+            // Close the current stage (BalanceInquires)
+            primaryStage.close();
+        });
 
-        // Adding nodes to the deposit VBox
-        depositBox.getChildren().addAll(titlePane, currentBalanceLabel, depositAmountLabel, depositMoneyField, depositButton);
+        // Button: "Logout"
+        Button logoutButton = new Button("Logout");
+        logoutButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+
+        // Event handler for the "Logout" button
+        logoutButton.setOnAction(e -> {
+            // Create an instance of LoginPage and show its stage
+            LoginPage loginPage = new LoginPage();
+            Stage loginStage = new Stage();
+            loginPage.start(loginStage);
+
+            // Close the current stage (BalanceInquires)
+            primaryStage.close();
+        });
+
+        // Adding nodes to the balanceInquires VBox
+        balanceInquiresBox.getChildren().addAll(titlePane, currentBalanceLabel, logoutButton);
+
+        // Setting the alignment of the buttons
+        HBox.setMargin(homescreenButton, new Insets(0, 10, 0, 0)); // Adding margin to the right of the "Home Screen" button
+        HBox.setMargin(logoutButton, new Insets(0, 0, 0, 10)); // Adding margin to the left of the "Logout" button
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
-        root.getChildren().addAll(blueBackground, whiteRectangle, depositBox);
+        root.getChildren().addAll(blueBackground, whiteRectangle, balanceInquiresBox);
 
-        // Centering the deposit VBox
-        StackPane.setAlignment(depositBox, Pos.CENTER_LEFT);
+        // Centering the balanceInquires VBox
+        StackPane.setAlignment(balanceInquiresBox, Pos.CENTER_LEFT);
 
         // Moving homeImageView to the top left corner
         StackPane.setAlignment(homeImageView, Pos.TOP_LEFT);
