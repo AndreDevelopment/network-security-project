@@ -37,6 +37,14 @@ public class WithdrawalPage extends Application {
         homeImageView.setFitWidth(30); // Set the width of the image
         homeImageView.setFitHeight(30); // Set the height of the image
 
+        // Load the home image
+        Image logoutImage = new Image(getClass().getResourceAsStream("/gui/images/logout.png"));
+
+        // Create an ImageView for the home image
+        ImageView logoutImageView = new ImageView(logoutImage);
+        logoutImageView.setFitWidth(30); // Set the width of the image
+        logoutImageView.setFitHeight(30); // Set the height of the image
+
         // Creating a white rectangle background with border radius
         Rectangle whiteRectangle = new Rectangle(600, 400);
         whiteRectangle.setFill(Color.WHITE);
@@ -76,6 +84,18 @@ public class WithdrawalPage extends Application {
         // Button: "Withdrawal"
         Button withdrawalButton = new Button("Withdraw");
         withdrawalButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+        withdrawalButton.setOnAction(e -> {
+            // Print deposit to console
+            String withdrawal = withdrawalMoneyField.getText();
+            System.out.println("Withdrawal Amount: " + withdrawal);
+
+            // Keep the existing routing behavior to navigate to the home screen
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Adding nodes to the withdrawal VBox
         withdrawalBox.getChildren().addAll(titlePane, currentBalanceLabel, withdrawalAmountLabel, withdrawalMoneyField, withdrawalButton);
@@ -86,6 +106,20 @@ public class WithdrawalPage extends Application {
 
         // Centering the withdrawal VBox
         StackPane.setAlignment(withdrawalBox, Pos.CENTER_LEFT);
+
+        // Moving logoutImageView to the top right corner
+        StackPane.setAlignment(logoutImageView, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutImageView, new Insets(20, 20, 0, 0)); // Setting margin to move it slightly down and left
+
+        // Create a button from the logoutImageView
+        Button logoutButton = new Button();
+        logoutButton.setGraphic(logoutImageView);
+        logoutButton.setOnAction(e -> showLoginPage(primaryStage));
+
+        // Adding logoutButton to the root StackPane
+        root.getChildren().add(logoutButton);
+        StackPane.setAlignment(logoutButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutButton, new Insets(20)); // Setting margin to move it slightly down and left
 
         // Moving homeImageView to the top left corner
         StackPane.setAlignment(homeImageView, Pos.TOP_LEFT);
@@ -107,6 +141,11 @@ public class WithdrawalPage extends Application {
     }
 
     // Method to show the home page
+    private void showLoginPage(Stage primaryStage) {
+        LoginPage loginPage = new LoginPage();
+        loginPage.start(primaryStage);
+    }
+
     private void showHomePage(Stage primaryStage) {
         HomePage homePage = new HomePage();
         homePage.start(primaryStage);
