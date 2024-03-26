@@ -32,39 +32,7 @@ public class ATMClient {
             Object fromBankServer, fromClient="";
 
 
-
-
-
-            if ((fromBankServer = in.readObject()) != null) {
-
-                //Splitting the data
-                String[] parts = ((String) fromBankServer).split(",");
-                String bankID = parts[0];
-                String bankNonce = parts[1];
-
-                //Printing the result
-                System.out.println("Got bank Id: "+bankID);
-                System.out.println("Got bank Nonce: "+bankNonce);
-
-                //Creating the master key
-                String masterKeyString = KeyCipher.generateMasterKeyString();
-                newMasterKey = KeyCipher.createSecretKey(masterKeyString);
-                System.out.println("The master key is: "+newMasterKey);
-                //Generating a nonce
-                int atmClientNonce = KeyCipher.generateNonce();
-
-                //Sending message 2 | Encrypted with the old Shared key
-                fromClient = KeyCipher.encrypt (oldSharedKey,atmClientNonce+","+masterKeyString);
-                out.writeObject(fromClient);
-
-            }
-
-            if ((fromBankServer = in.readObject()) != null) {
-
-                fromBankServer = KeyCipher.decrypt(newMasterKey,(String)fromBankServer);
-
-                System.out.println("Checking ATM original nonce: "+fromBankServer);
-            }
+            authenticateBankToATM(in, out);
 
             //Creating the two new keys
             byte[] info1 = "key_for_encryption".getBytes();
@@ -77,17 +45,9 @@ public class ATMClient {
             System.out.println("Created the encryption key: "+msgEncryptionKey);
             System.out.println("Created a MAC key: "+macKey);
 
-//            //Isolate into userVerification method
-//            System.out.println("Enter your username: ");
-//            String userName = input.nextLine();
-//            System.out.println("Enter your password: ");
-//            String password = input.nextLine();
-//
-//            fromClient = userName +","+password;
-//
-//            //Sending the Client public key
-//            out.writeObject(fromClient);
-//            //Isolate into userVerification method
+
+            authenticateCustomer(input, out);
+
 
 
 
@@ -104,7 +64,56 @@ public class ATMClient {
         }
     }// end of main
 
+    private static void authenticateCustomer(Scanner input, ObjectOutputStream out) throws IOException {
+        Object fromClient;
+        System.out.println("Enter your username: ");
+        String userName = input.nextLine();
+        System.out.println("Enter your password: ");
+        String password = input.nextLine();
 
+        fromClient = userName +","+password;
+
+        //Sending the Client public key
+        out.writeObject(fromClient);
+    }
+
+    private static void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+        Object fromBankServer;
+        Object fromClient;
+        if ((fromBankServer = in.readObject()) != null) {
+            System.out.println(Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
+            //Splitting the data
+            String[] parts = ((String) fromBankServer).split(",");
+            String bankID = parts[0];
+            String bankNonce = parts[1];
+
+            //Printing the result
+            System.out.println("->Got bank Id: "+bankID);
+            System.out.println("->Got bank Nonce: "+bankNonce);
+
+            //Creating the master key
+            String masterKeyString = KeyCipher.generateMasterKeyString();
+            newMasterKey = KeyCipher.createSecretKey(masterKeyString);
+            System.out.println(Colour.ANSI_GREEN+ "[GENERATED] Master Key "+Colour.ANSI_RESET+newMasterKey);
+            //Generating a nonce
+            int atmClientNonce = KeyCipher.generateNonce();
+            System.out.println(Colour.ANSI_GREEN+ "[GENERATED] Nonce Value "+Colour.ANSI_RESET+atmClientNonce);
+
+            //Sending message 2 | Encrypted with the old Shared key
+            fromClient = KeyCipher.encrypt (oldSharedKey,atmClientNonce+","+masterKeyString);
+            out.writeObject(fromClient);
+            System.out.println("<-Sending encrypted nonce & master key...");
+
+        }
+
+        if ((fromBankServer = in.readObject()) != null) {
+            System.out.println(Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
+            System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+fromBankServer);
+            fromBankServer = KeyCipher.decrypt(newMasterKey,(String)fromBankServer);
+
+            System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+fromBankServer);
+        }
+    }
 
 
 }
