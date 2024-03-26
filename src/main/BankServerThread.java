@@ -3,6 +3,7 @@ package main;
 
 import auditlog.AuditLog;
 import auditlog.ProcessInfo;
+import auditlog.Transaction;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -183,22 +185,28 @@ public class BankServerThread extends Thread {
             //Reading in the Request
             if ((inputLine = in.readObject()) != null) {
 
+                Customer c = ((ProcessInfo) inputLine).getCustomer();
                 //General Withdrawal code
-                double balance = ((ProcessInfo) inputLine).getCustomer().getBankBalance();
+                double balance = c.getBankBalance();
                 double withdraw = ((ProcessInfo) inputLine).getAmount();
+
+                Transaction t = new Transaction(new Date(),c.getCustomerID(),"withdrawal",true);
 
                 System.out.println("Current balance: "+balance+" | Withdraw amount: "+withdraw);
                 if (withdraw>balance){
                     outputLine = "You cannot withdraw that amount broke bitch";
+                    t.setStatus(false);
                 }else if (withdraw<0){
                     outputLine = "Are you stupid? How can you withdraw negative money";
+                    t.setStatus(false);
                 }else{
 
-                    ((ProcessInfo) inputLine).getCustomer().setBankBalance(balance-withdraw);
-                    System.out.println("New Balance: "+((ProcessInfo) inputLine).getCustomer().getBankBalance());
-                    outputLine = ((ProcessInfo) inputLine).getCustomer().getBankBalance()+"";
+                    c.setBankBalance(balance-withdraw);
+                    System.out.println("New Balance: "+c.getBankBalance());
+                    outputLine = c.getBankBalance()+"";
                 }//closing if
 
+                auditLog.addTransaction(t);
                 out.writeObject(outputLine);
             }
         } catch (IOException | ClassNotFoundException e) {
