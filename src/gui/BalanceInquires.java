@@ -36,6 +36,14 @@ public class BalanceInquires extends Application {
         homeImageView.setFitWidth(30); // Set the width of the image
         homeImageView.setFitHeight(30); // Set the height of the image
 
+        // Load the home image
+        Image logoutImage = new Image(getClass().getResourceAsStream("/gui/images/logout.png"));
+
+        // Create an ImageView for the home image
+        ImageView logoutImageView = new ImageView(logoutImage);
+        logoutImageView.setFitWidth(30); // Set the width of the image
+        logoutImageView.setFitHeight(30); // Set the height of the image
+
         // Creating a white rectangle background with border radius
         Rectangle whiteRectangle = new Rectangle(600, 400);
         whiteRectangle.setFill(Color.WHITE);
@@ -68,6 +76,8 @@ public class BalanceInquires extends Application {
 
         // Event handler for the "Home Screen" button
         homescreenButton.setOnAction(e -> {
+
+            System.out.println("Navigating to Home Screen...");
             // Create an instance of HomePage and show its stage
             HomePage homePage = new HomePage();
             Stage homeStage = new Stage();
@@ -77,27 +87,27 @@ public class BalanceInquires extends Application {
             primaryStage.close();
         });
 
-        // Button: "Logout"
-        Button logoutButton = new Button("Logout");
-        logoutButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
-
-        // Event handler for the "Logout" button
-        logoutButton.setOnAction(e -> {
-            // Create an instance of LoginPage and show its stage
-            LoginPage loginPage = new LoginPage();
-            Stage loginStage = new Stage();
-            loginPage.start(loginStage);
-
-            // Close the current stage (BalanceInquires)
-            primaryStage.close();
-        });
+//        // Button: "Logout"
+//        Button logoutButton = new Button("Logout");
+//        logoutButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+//
+//        // Event handler for the "Logout" button
+//        logoutButton.setOnAction(e -> {
+//            // Create an instance of LoginPage and show its stage
+//            LoginPage loginPage = new LoginPage();
+//            Stage loginStage = new Stage();
+//            loginPage.start(loginStage);
+//
+//            // Close the current stage (BalanceInquires)
+//            primaryStage.close();
+//        });
 
         // Adding nodes to the balanceInquires VBox
-        balanceInquiresBox.getChildren().addAll(titlePane, currentBalanceLabel, logoutButton);
+        balanceInquiresBox.getChildren().addAll(titlePane, currentBalanceLabel);
 
         // Setting the alignment of the buttons
         HBox.setMargin(homescreenButton, new Insets(0, 10, 0, 0)); // Adding margin to the right of the "Home Screen" button
-        HBox.setMargin(logoutButton, new Insets(0, 0, 0, 10)); // Adding margin to the left of the "Logout" button
+        //HBox.setMargin(logoutButton, new Insets(0, 0, 0, 10)); // Adding margin to the left of the "Logout" button
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
@@ -105,6 +115,20 @@ public class BalanceInquires extends Application {
 
         // Centering the balanceInquires VBox
         StackPane.setAlignment(balanceInquiresBox, Pos.CENTER_LEFT);
+
+        // Moving logoutImageView to the top right corner
+        StackPane.setAlignment(logoutImageView, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutImageView, new Insets(20, 20, 0, 0)); // Setting margin to move it slightly down and left
+
+        // Create a button from the logoutImageView
+        Button logoutButton = new Button();
+        logoutButton.setGraphic(logoutImageView);
+        logoutButton.setOnAction(e -> showLoginPage(primaryStage));
+
+        // Adding logoutButton to the root StackPane
+        root.getChildren().add(logoutButton);
+        StackPane.setAlignment(logoutButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutButton, new Insets(20)); // Setting margin to move it slightly down and left
 
         // Moving homeImageView to the top left corner
         StackPane.setAlignment(homeImageView, Pos.TOP_LEFT);
@@ -127,6 +151,11 @@ public class BalanceInquires extends Application {
     }
 
     // Method to show the home page
+    private void showLoginPage(Stage primaryStage) {
+        LoginPage loginPage = new LoginPage();
+        loginPage.start(primaryStage);
+    }
+
     private void showHomePage(Stage primaryStage) {
         HomePage homePage = new HomePage();
         homePage.start(primaryStage);
