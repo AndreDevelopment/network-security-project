@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,13 +17,16 @@ public class BankServerThread extends Thread {
     private SecretKey oldSharedKey;
     private SecretKey newMasterKey;
 
-    List<Customer> customerList = List.of(new Customer(1234,"Andre","password1")
-            ,new Customer(4567,"Arshroop","ILoveAndre"));
+    List<Customer> customerList;
 
 
     public BankServerThread(Socket socket) {
         clientSocket = socket;
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
+        customerList = new ArrayList<>();
+        //Dummy values for our list
+        customerList.add(new Customer(1234,"Andre","password1"));
+        customerList.add(new Customer(4567,"Arshroop","ILoveAndre"));
 
     }
 

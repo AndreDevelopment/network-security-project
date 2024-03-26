@@ -6,6 +6,7 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -113,5 +114,63 @@ public class KeyCipher {
     private static byte[] decode(String data) {
         return Base64.getDecoder().decode(data);
     }
+
+
+
+    public static SecretKey deriveKeyUsingHkdf(SecretKey secretKey, byte[] info, int keySize) throws Exception {
+        // Use HmacSHA256 for HKDF extract and expand steps
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        hmac.init(secretKey);
+        // Extract phase (optional, can use secretKey directly)
+        byte[] ikm = secretKey.getEncoded(); // Extract keying material
+
+        // Expand phase
+        byte[] prk = hmac.doFinal(ikm); // Pseudo-Random Key
+        byte[] infoWithLength =  concat(info, new byte[]{(byte) info.length});
+        byte[] okm = hmac.doFinal(concat(prk, infoWithLength)); // Output Keying Material
+
+        return convertByteToSecretKey(truncate(okm, keySize),"AES"); // Truncate to desired key size
+    }
+
+    public static SecretKey convertByteToSecretKey(byte[] keyBytes, String algorithm) {
+        // Check if algorithm is valid
+        if (algorithm == null || algorithm.isEmpty()) {
+            throw new IllegalArgumentException("Algorithm cannot be null or empty");
+        }
+
+        // Create SecretKeySpec object with the key bytes and algorithm
+        return new SecretKeySpec(keyBytes, algorithm);
+    }
+
+    private static byte[] concat(byte[]... arrays) {
+        int length = 0;
+        for (byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int offset = 0;
+        for (byte[] array : arrays) {
+            System.arraycopy(array, 0, result, offset, array.length);
+            offset += array.length;
+        }
+        return result;
+    }
+
+    private static byte[] truncate(byte[] data, int length) {
+
+
+        // Ensure length is at least the size of the data array
+        length = Math.max(length, data.length);
+
+        byte[] truncated = new byte[length];
+
+        // Copy elements from data and fill remaining with 0
+        System.arraycopy(data, 0, truncated, 0, data.length);
+        Arrays.fill(truncated, data.length, length, (byte) 0);
+
+        return truncated;
+    }
+
+
 
 }

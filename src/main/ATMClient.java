@@ -32,6 +32,9 @@ public class ATMClient {
             Object fromBankServer, fromClient="";
 
 
+
+
+
             if ((fromBankServer = in.readObject()) != null) {
 
                 //Splitting the data
@@ -63,7 +66,16 @@ public class ATMClient {
                 System.out.println("Checking ATM original nonce: "+fromBankServer);
             }
 
+            //Creating the two new keys
+            byte[] info1 = "key_for_encryption".getBytes();
+            byte[] info2 = "key_for_mac".getBytes();
 
+            SecretKey msgEncryptionKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info1, 256);
+            SecretKey macKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info2, 256);
+
+            System.out.println("Creating the keys...");
+            System.out.println("Created the encryption key: "+msgEncryptionKey);
+            System.out.println("Created a MAC key: "+macKey);
 
 //            //Isolate into userVerification method
 //            System.out.println("Enter your username: ");
@@ -87,7 +99,7 @@ public class ATMClient {
             System.err.println("Couldn't get I/O for the connection to " +
                     hostName);
             System.exit(1);
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }// end of main
