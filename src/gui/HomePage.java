@@ -1,6 +1,7 @@
 package gui;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -19,7 +20,7 @@ public class HomePage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Home");
+        primaryStage.setTitle("HOME");
 
         // Creating a VBox layout for home page components
         VBox homeBox = new VBox();
@@ -34,6 +35,14 @@ public class HomePage extends Application {
         whiteRectangle.setFill(Color.WHITE);
         whiteRectangle.setArcWidth(20); // Adding border radius
         whiteRectangle.setArcHeight(20); // Adding border radius
+
+        // Load the home image
+        Image logoutImage = new Image(getClass().getResourceAsStream("/gui/images/logout.png"));
+
+        // Create an ImageView for the home image
+        ImageView logoutImageView = new ImageView(logoutImage);
+        logoutImageView.setFitWidth(30); // Set the width of the image
+        logoutImageView.setFitHeight(30); // Set the height of the image
 
         // Load the avatar image
         Image avatarImage = new Image(getClass().getResourceAsStream("/gui/images/avatar.png"));
@@ -83,9 +92,28 @@ public class HomePage extends Application {
         // Centering the home VBox
         StackPane.setAlignment(homeBox, Pos.CENTER);
 
+        // Moving logoutImageView to the top right corner
+        StackPane.setAlignment(logoutImageView, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutImageView, new Insets(20, 20, 0, 0)); // Setting margin to move it slightly down and left
+
+        // Create a button from the logoutImageView
+        Button logoutButton = new Button();
+        logoutButton.setGraphic(logoutImageView);
+        logoutButton.setOnAction(e -> showLoginPage(primaryStage));
+
+        // Adding logoutButton to the root StackPane
+        root.getChildren().add(logoutButton);
+        StackPane.setAlignment(logoutButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutButton, new Insets(20)); // Setting margin to move it slightly down and left
+
         Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
+    }
+
+    private void showLoginPage(Stage primaryStage) {
+        LoginPage loginPage = new LoginPage();
+        loginPage.start(primaryStage);
     }
 
     // Method to update the content for the deposit page
@@ -105,6 +133,8 @@ public class HomePage extends Application {
         BalanceInquires balanceInquires = new BalanceInquires();
         balanceInquires.start(primaryStage);
     }
+
+
 
     // Other methods...
 

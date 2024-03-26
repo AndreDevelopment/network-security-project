@@ -18,52 +18,45 @@ public class RegisterPage extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("NEW USER REGISTRATION");
 
-        // Creating a VBox layout for registration components
-        VBox registrationBox = new VBox();
-        registrationBox.setSpacing(20); // Increased spacing between components
-        registrationBox.setAlignment(Pos.CENTER);
+        // Creating a GridPane layout for registration components
+        GridPane registrationGrid = new GridPane();
+        registrationGrid.setVgap(20); // Increased vertical gap between components
+        registrationGrid.setAlignment(Pos.CENTER);
 
         // Title
         Label titleLabel = new Label("NEW USER REGISTRATION");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;"); // Making the title bold
         titleLabel.setAlignment(Pos.TOP_CENTER); // Aligning the title towards the top
         titleLabel.setPadding(new Insets(20, 0, 0, 0)); // Adding padding to the top
+        registrationGrid.add(titleLabel, 0, 0, 2, 1); // Adding the title to the grid
 
         // Name field
-        HBox nameBox = new HBox(); // Container to hold the label and text field horizontally
-        nameBox.setAlignment(Pos.CENTER); // Centering the content horizontally
-        Label nameLabel = new Label("Name  ");
+        Label nameLabel = new Label("Name");
         TextField nameField = new TextField();
         nameField.setPromptText("Enter Name");
-        nameField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        nameBox.getChildren().addAll(nameLabel, nameField);
+        registrationGrid.add(nameLabel, 0, 1); // Adding the label to the grid
+        registrationGrid.add(nameField, 1, 1); // Adding the text field to the grid
 
         // Username field
-        HBox usernameBox = new HBox(); // Container to hold the label and text field horizontally
-        usernameBox.setAlignment(Pos.CENTER); // Centering the content horizontally
-        Label usernameLabel = new Label("Username  ");
+        Label usernameLabel = new Label("Username");
         TextField usernameField = new TextField();
         usernameField.setPromptText("Enter Username");
-        usernameField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        usernameBox.getChildren().addAll(usernameLabel, usernameField);
+        registrationGrid.add(usernameLabel, 0, 2); // Adding the label to the grid
+        registrationGrid.add(usernameField, 1, 2); // Adding the text field to the grid
 
         // Password field
-        HBox passwordBox = new HBox(); // Container to hold the label and text field horizontally
-        passwordBox.setAlignment(Pos.CENTER); // Centering the content horizontally
-        Label passwordLabel = new Label("Password  ");
+        Label passwordLabel = new Label("Password");
         TextField passwordField = new TextField();
         passwordField.setPromptText("Enter Password");
-        passwordField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
+        registrationGrid.add(passwordLabel, 0, 3); // Adding the label to the grid
+        registrationGrid.add(passwordField, 1, 3); // Adding the text field to the grid
 
         // Re-Password field
-        HBox reEnterPassBox = new HBox(); // Container to hold the label and text field horizontally
-        reEnterPassBox.setAlignment(Pos.CENTER); // Centering the content horizontally
         Label reEnterPassBoxLabel = new Label("Re-Enter Password  ");
         TextField reEnterPassBoxField = new TextField();
         reEnterPassBoxField.setPromptText("Re-Enter Password");
-        reEnterPassBoxField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        reEnterPassBox.getChildren().addAll(reEnterPassBoxLabel, reEnterPassBoxField);
+        registrationGrid.add(reEnterPassBoxLabel, 0, 4); // Adding the label to the grid
+        registrationGrid.add(reEnterPassBoxField, 1, 4); // Adding the text field to the grid
 
         // Register button
         Button registerButton = new Button("Register");
@@ -77,8 +70,10 @@ public class RegisterPage extends Application {
             primaryStage.close();
         });
 
-        // Adding nodes to the registration VBox
-        registrationBox.getChildren().addAll(titleLabel, nameBox, usernameBox, passwordBox, reEnterPassBox, registerButton);
+        // Creating an HBox to center the register button
+        HBox buttonBox = new HBox(registerButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        registrationGrid.add(buttonBox, 0, 5, 2, 1); // Adding the register button to the grid
 
         // Creating a blue background
         Rectangle blueBackground = new Rectangle(1000, 800, Color.web("#c6e2ff"));
@@ -91,15 +86,17 @@ public class RegisterPage extends Application {
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
-        root.getChildren().addAll(blueBackground, whiteRectangle, registrationBox);
+        root.getChildren().addAll(blueBackground, whiteRectangle, registrationGrid);
 
         // Centering the white rectangle
         StackPane.setAlignment(whiteRectangle, Pos.CENTER);
 
-        Scene scene = new Scene(root, 1000, 800); // Creating a scene
+        Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
     }
+
+
 
     public static void main(String[] args) {
         System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
