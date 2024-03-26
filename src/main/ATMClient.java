@@ -7,6 +7,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 
@@ -46,11 +49,8 @@ public class ATMClient {
             System.out.println("Created a MAC key: "+macKey);
 
 
-            authenticateCustomer(input, out);
-
-
-
-
+            //authenticateCustomer(input, out);
+            MAC("soon I'll be 60 years old", macKey, out);
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
@@ -112,6 +112,26 @@ public class ATMClient {
             fromBankServer = KeyCipher.decrypt(newMasterKey,(String)fromBankServer);
 
             System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+fromBankServer);
+        }
+    }
+    private static void MAC(String message, Key macKey, ObjectOutputStream out) {
+        try {
+            //String message = "This is a secret message";
+            // String secretKeyString = "mySecretKey";
+
+            // Convert the secret key string to Key type
+            // Key secretKey = new SecretKeySpec(secretKeyString.getBytes(), "HmacSHA256");
+
+            // Encrypt the message and get MAC code
+            String[] Data = KeyCipher.createMAC(message, macKey);
+            String macCode = Data[0];
+            String Message = Data[1];
+
+            System.out.println("MAC Code: " + macCode);
+            System.out.println("Message: " + Message);
+            out.writeObject(macCode + "," + Message);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
