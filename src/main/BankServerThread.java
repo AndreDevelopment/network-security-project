@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,13 +17,16 @@ public class BankServerThread extends Thread {
     private SecretKey oldSharedKey;
     private SecretKey newMasterKey;
 
-    List<Customer> customerList = List.of(new Customer(1234,"Andre","password1")
-            ,new Customer(4567,"Arshroop","ILoveAndre"));
+    List<Customer> customerList;
 
 
     public BankServerThread(Socket socket) {
         clientSocket = socket;
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
+        customerList = new ArrayList<>();
+        //Dummy values for our list
+        customerList.add(new Customer(1234,"Andre","password1"));
+        customerList.add(new Customer(4567,"Arshroop","ILoveAndre"));
 
     }
 
@@ -38,52 +42,10 @@ public class BankServerThread extends Thread {
             Object inputLine, outputLine="";
 
 
-            //Sending the 1st message line
-            String bankId = "BankServer";
-            int bankNonce = KeyCipher.generateNonce();
+            authenticateBankToATM(out, in);
 
-            outputLine = bankId+","+bankNonce;
-            out.writeObject(outputLine);
+            authenticateCustomer(in);
 
-
-
-            if ((inputLine = in.readObject()) != null) {
-
-                inputLine = KeyCipher.decrypt(oldSharedKey,(String)inputLine);
-
-                String[] parts = ((String) inputLine).split(",");
-                String atmNonce = parts[0];
-                String masterKeyString = parts[1];
-
-                System.out.println("ATM Nonce: "+atmNonce);
-
-                //Generate the master key
-                newMasterKey = KeyCipher.createSecretKey(masterKeyString);
-                System.out.println("Master Key: "+newMasterKey);
-
-                //Final message Line
-                outputLine = KeyCipher.encrypt(newMasterKey,atmNonce);
-                out.writeObject(outputLine);
-
-
-            }
-
-            //Isolate into userVerification method
-            //Username & Password received
-//            if ((inputLine = in.readObject()) != null) {
-//
-//                String[] parts = ((String) inputLine).split(",");
-//                String userName = parts[0];
-//                String password = parts[1];
-//
-//                if (verifyUser(userName,password)){
-//                    System.out.println(Colour.ANSI_GREEN+"User is verified :)" +Colour.ANSI_RESET);
-//                }else {
-//                    System.out.println(Colour.ANSI_RED+ "User was not verified :("+Colour.ANSI_RESET);
-//                }
-//
-//            }
-            //Isolate into userVerification method
 
 
 
@@ -97,6 +59,62 @@ public class BankServerThread extends Thread {
             e.printStackTrace();
         }
     }// end of main
+
+    private void authenticateCustomer(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Object inputLine;
+        //Isolate into userVerification method
+        //Username & Password received
+        if ((inputLine = in.readObject()) != null) {
+
+            String[] parts = ((String) inputLine).split(",");
+            String userName = parts[0];
+            String password = parts[1];
+
+            if (verifyUser(userName,password)){
+                System.out.println(Colour.ANSI_GREEN+"User is verified :)" +Colour.ANSI_RESET);
+            }else {
+                System.out.println(Colour.ANSI_RED+ "User was not verified :("+Colour.ANSI_RESET);
+            }
+
+        }
+    }
+
+    private void authenticateBankToATM(ObjectOutputStream out, ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Object inputLine;
+        Object outputLine;
+        //Sending the 1st message line
+        String bankId = "BankServer";
+        int bankNonce = KeyCipher.generateNonce();
+        System.out.println(Colour.ANSI_GREEN+ "[GENERATED] Nonce Value "+bankNonce+Colour.ANSI_RESET);
+
+        outputLine = bankId+","+bankNonce;
+        out.writeObject(outputLine);
+        System.out.println("<-Sending ID & Nonce...");
+
+
+        if ((inputLine = in.readObject()) != null) {
+
+            //Receiving the nonce and Key
+            System.out.println(Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
+            System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+inputLine);
+            inputLine = KeyCipher.decrypt(oldSharedKey,(String)inputLine);
+
+
+            String[] parts = ((String) inputLine).split(",");
+            String atmNonce = parts[0];
+            String masterKeyString = parts[1];
+
+            //Generate the master key
+            newMasterKey = KeyCipher.createSecretKey(masterKeyString);
+            System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+((String) inputLine).substring(0,6)+","+newMasterKey);
+
+            //Final message Line
+            outputLine = KeyCipher.encrypt(newMasterKey,atmNonce);
+            out.writeObject(outputLine);
+            System.out.println("<-Sending encrypted nonce...");
+
+        }
+    }
 
     public boolean verifyUser(String username,String password){
 
