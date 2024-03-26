@@ -170,6 +170,61 @@ public class KeyCipher {
 
         return truncated;
     }
+    // Method to encrypt a message and generate MAC code
+    public static String[] createMAC(String message, Key secretKey) {
+        try {
+            String[] result = new String[2];
+
+            // Initialize MAC with HmacSHA256 algorithm
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(secretKey);
+
+            // Generate MAC code for the message
+            byte[] macBytes = mac.doFinal(message.getBytes());
+
+            // Convert MAC bytes to hexadecimal string
+            StringBuilder macStringBuilder = new StringBuilder();
+            for (byte b : macBytes) {
+                macStringBuilder.append(String.format("%02x", b));
+            }
+
+            result[0] = macStringBuilder.toString(); // MAC code
+            result[1] = message; // Original message
+
+            return result;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean verifyMAC(String Message, String macCode, Key secretKey) {
+        try {
+            // Initialize MAC with HmacSHA256 algorithm
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(secretKey);
+
+            // Generate MAC code for the encrypted message
+            byte[] receivedMacBytes = mac.doFinal(Message.getBytes());
+
+            // Convert received MAC bytes to hexadecimal string
+            StringBuilder receivedMacStringBuilder = new StringBuilder();
+            for (byte b : receivedMacBytes) {
+                receivedMacStringBuilder.append(String.format("%02x", b));
+            }
+
+            String receivedMac = receivedMacStringBuilder.toString();
+
+            // Compare received MAC with the provided MAC code
+            return macCode.equals(receivedMac);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
 
