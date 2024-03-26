@@ -1,6 +1,8 @@
 package main;
 
 
+import auditlog.ProcessInfo;
+
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -17,6 +19,8 @@ public class ATMClient {
 
     private static SecretKey oldSharedKey;
     private static SecretKey newMasterKey;
+
+    private static Customer signedInCustomer;
     public static void main(String[] args) throws IOException {
 
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
@@ -31,7 +35,7 @@ public class ATMClient {
 
         ) {
 
-            Scanner input = new Scanner(System.in);
+
             Object fromBankServer, fromClient="";
 
 
@@ -49,8 +53,9 @@ public class ATMClient {
             System.out.println("Created a MAC key: "+macKey);
 
 
-            //authenticateCustomer(input, out);
-            MAC("soon I'll be 60 years old", macKey, out);
+            authenticateCustomer(in, out);
+            //MAC("soon I'll be 60 years old", macKey, out);
+            withdrawal(in,out);
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
@@ -64,17 +69,32 @@ public class ATMClient {
         }
     }// end of main
 
-    private static void authenticateCustomer(Scanner input, ObjectOutputStream out) throws IOException {
-        Object fromClient;
-        System.out.println("Enter your username: ");
-        String userName = input.nextLine();
-        System.out.println("Enter your password: ");
-        String password = input.nextLine();
+    private static void authenticateCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+        try {
+            Scanner input = new Scanner(System.in);
+            Object fromClient;
+            Object fromBankServer;
 
-        fromClient = userName +","+password;
+            System.out.println("Enter your username: ");
+            String userName = input.nextLine();
+            System.out.println("Enter your password: ");
+            String password = input.nextLine();
 
-        //Sending the Client public key
-        out.writeObject(fromClient);
+
+            fromClient = userName +","+password;
+
+            //Sending the Client public key
+            out.writeObject(fromClient);
+
+            if ((fromBankServer = in.readObject()) != null) {
+                System.out.println("Got the Customer Object!");
+                signedInCustomer = (Customer) fromBankServer;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     private static void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
@@ -133,7 +153,25 @@ public class ATMClient {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
+    }//end of MAC
+
+    public static void withdrawal(ObjectInputStream in,ObjectOutputStream out){
+
+        Object fromBankServer;
+        try {
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,600);
+            out.writeObject(processInfo);
+
+            if ((fromBankServer = in.readObject()) != null) {
+                System.out.println(Colour.ANSI_YELLOW+fromBankServer+Colour.ANSI_RESET);
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+    }//end of withdrawal
 
 
 }

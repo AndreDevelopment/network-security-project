@@ -1,6 +1,9 @@
 package main;
 
 
+import auditlog.AuditLog;
+import auditlog.ProcessInfo;
+
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,14 +23,17 @@ public class BankServerThread extends Thread {
 
     List<Customer> customerList;
 
+    private static AuditLog auditLog;
+
 
     public BankServerThread(Socket socket) {
         clientSocket = socket;
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
         customerList = new ArrayList<>();
         //Dummy values for our list
-        customerList.add(new Customer(1234,"Andre","password1"));
-        customerList.add(new Customer(4567,"Arshroop","ILoveAndre"));
+        customerList.add(new Customer(1234,"Andre","password1",700));
+        customerList.add(new Customer(4567,"Arshroop","ILoveAndre",10000000));
+        auditLog = new AuditLog();
 
     }
 
@@ -54,15 +60,18 @@ public class BankServerThread extends Thread {
             System.out.println("Creating the keys...");
             System.out.println("Created the encryption key: "+msgEncryptionKey);
             System.out.println("Created a MAC key: "+macKey);
-            //authenticateCustomer(in);
-            if ((inputLine = in.readObject()) != null) {
+            authenticateCustomer(in,out);
+            withdrawal(in,out);
 
-                String[] parts = ((String) inputLine).split(",");
-                String macCode = parts[0];
-                String Message = parts[1];
-                verifyMAC(Message, macCode, macKey);
-
-            }
+            //MAC verification
+//            if ((inputLine = in.readObject()) != null) {
+//
+//                String[] parts = ((String) inputLine).split(",");
+//                String macCode = parts[0];
+//                String Message = parts[1];
+//                verifyMAC(Message, macCode, macKey);
+//
+//            }
 
 
 
@@ -79,7 +88,7 @@ public class BankServerThread extends Thread {
         }
     }// end of main
 
-    private void authenticateCustomer(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void authenticateCustomer(ObjectInputStream in,ObjectOutputStream out) throws IOException, ClassNotFoundException {
         Object inputLine;
         //Isolate into userVerification method
         //Username & Password received
@@ -89,11 +98,19 @@ public class BankServerThread extends Thread {
             String userName = parts[0];
             String password = parts[1];
 
+           Customer c = customerList.stream()
+                    .filter(customer -> customer.getUsername()
+                            .equals(userName)).findFirst().orElse(null);
+
             if (verifyUser(userName, password)) {
                 System.out.println(Colour.ANSI_GREEN + "User is verified :)" + Colour.ANSI_RESET);
+
             } else {
                 System.out.println(Colour.ANSI_RED + "User was not verified :(" + Colour.ANSI_RESET);
+
             }
+
+            out.writeObject(c);
 
         }
     }
@@ -156,6 +173,39 @@ public class BankServerThread extends Thread {
         }
         return isMACValid;
     }
+
+
+    public void withdrawal(ObjectInputStream in,ObjectOutputStream out){
+        Object inputLine;
+        Object outputLine;
+        try {
+
+            //Reading in the Request
+            if ((inputLine = in.readObject()) != null) {
+
+                //General Withdrawal code
+                double balance = ((ProcessInfo) inputLine).getCustomer().getBankBalance();
+                double withdraw = ((ProcessInfo) inputLine).getAmount();
+
+                System.out.println("Current balance: "+balance+" | Withdraw amount: "+withdraw);
+                if (withdraw>balance){
+                    outputLine = "You cannot withdraw that amount broke bitch";
+                }else if (withdraw<0){
+                    outputLine = "Are you stupid? How can you withdraw negative money";
+                }else{
+
+                    ((ProcessInfo) inputLine).getCustomer().setBankBalance(balance-withdraw);
+                    System.out.println("New Balance: "+((ProcessInfo) inputLine).getCustomer().getBankBalance());
+                    outputLine = ((ProcessInfo) inputLine).getCustomer().getBankBalance()+"";
+                }//closing if
+
+                out.writeObject(outputLine);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }//closing withdraw
 
 
 }
