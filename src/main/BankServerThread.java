@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,7 +20,7 @@ public class BankServerThread extends Thread {
     private final Socket clientSocket;
 
     private SecretKey oldSharedKey;
-    private SecretKey newMasterKey;
+    private static SecretKey newMasterKey,msgEncryptionKey,macKey;
 
     List<Customer> customerList;
 
@@ -48,24 +47,14 @@ public class BankServerThread extends Thread {
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         ) {
 
-            Object inputLine, outputLine="";
-
 
             authenticateBankToATM(out, in);
             //Creating the two new keys
-            byte[] info1 = "key_for_encryption".getBytes();
-            byte[] info2 = "key_for_mac".getBytes();
-
-            SecretKey msgEncryptionKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info1, 32);
-            SecretKey macKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info2, 32);
-
-
-            System.out.println(Colour.ANSI_GREEN+ "[CREATED] Encryption key: "+Colour.ANSI_RESET+msgEncryptionKey);
-            System.out.println(Colour.ANSI_GREEN+ "[CREATED]  MAC key: "+Colour.ANSI_RESET+macKey);
+            createBothKeys();
             authenticateCustomer(in,out);
 
 
-            withdrawal(in,out,macKey,msgEncryptionKey);
+            withdrawal(in,out);
 
 
 
@@ -73,8 +62,6 @@ public class BankServerThread extends Thread {
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -109,6 +96,24 @@ public class BankServerThread extends Thread {
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }//end of Customer authentication
+
+    public static void createBothKeys(){
+        try {
+            //Creating the two new keys
+            byte[] info1 = "key_for_encryption".getBytes();
+            byte[] info2 = "key_for_mac".getBytes();
+
+            msgEncryptionKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info1, 32);
+            macKey = KeyCipher.deriveKeyUsingHkdf(newMasterKey, info2, 32);
+
+
+            System.out.println(Colour.ANSI_GREEN+ "[CREATED] Encryption key: "+Colour.ANSI_RESET+msgEncryptionKey);
+            System.out.println(Colour.ANSI_GREEN+ "[CREATED]  MAC key: "+Colour.ANSI_RESET+macKey);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private void authenticateBankToATM(ObjectOutputStream out, ObjectInputStream in)  {
@@ -165,7 +170,7 @@ public class BankServerThread extends Thread {
 
 
 
-    public void withdrawal(ObjectInputStream in,ObjectOutputStream out,Key macKey,Key decryptKey){
+    public void withdrawal(ObjectInputStream in,ObjectOutputStream out){
         Object inputLine;
         String outputLine;
         try {
@@ -181,7 +186,7 @@ public class BankServerThread extends Thread {
                 System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
                 System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
                 //Decrypt message
-                String decryptMessage = KeyCipher.decrypt(decryptKey,encryptedRes);
+                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
                 //Verify MAC
                 KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
@@ -216,7 +221,7 @@ public class BankServerThread extends Thread {
 
                 auditLog.addTransaction(t);
                 //Encrypt
-               String encryptedOutput = KeyCipher.encrypt(decryptKey, outputLine);
+               String encryptedOutput = KeyCipher.encrypt(msgEncryptionKey, outputLine);
                 //Add MAC
                 outputLine = encryptedOutput + ","+KeyCipher.createMAC(outputLine,macKey);
                 //Send off
