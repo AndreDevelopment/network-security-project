@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class LoginPage extends Application {
@@ -32,28 +33,25 @@ public class LoginPage extends Application {
         titleLabel.setPadding(new Insets(20, 0, 0, 0)); // Adding padding to the top
 
         // Username field
-        HBox usernameBox = new HBox(); // Container to hold the label and text field horizontally
-        usernameBox.setAlignment(Pos.CENTER); // Centering the content horizontally
-        Label usernameLabel = new Label("Username  ");
         TextField usernameField = new TextField();
         usernameField.setPromptText("Enter Username");
         usernameField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        usernameBox.getChildren().addAll(usernameLabel, usernameField);
 
         // Password field
-        HBox passwordBox = new HBox(); // Container to hold the label and text field horizontally
-        passwordBox.setAlignment(Pos.CENTER); // Centering the content horizontally
-        Label passwordLabel = new Label("Password  ");
         TextField passwordField = new TextField();
         passwordField.setPromptText("Enter Password");
         passwordField.setMaxWidth(300); // Limiting width to fit inside the rectangle
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
 
         // Login button
         Button loginButton = new Button("Login");
         loginButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         loginButton.setOnAction(e -> {
-            // Create an instance of HomePage and show its stage
+            // Print username and password to console
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+            System.out.println("Username: " + username + ", Password: " + password);
+
+            // Keep the existing routing behavior to navigate to the home screen
             HomePage homePage = new HomePage();
             Stage homeStage = new Stage();
             homePage.start(homeStage);
@@ -64,25 +62,26 @@ public class LoginPage extends Application {
         // Register button
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
-        registerButton.setOnAction(e -> showRegisterPage(primaryStage));
-        //{
-            // Create an instance of RegisterPage and show its stage
-            //RegisterPage registerPage = new RegisterPage();
-            //Stage registerStage = new Stage();
-          //  registerPage.start(registerStage);
-        //});
+        registerButton.setOnAction(e -> {
+            RegisterPage registerPage = new RegisterPage();
+            Stage registerStage = new Stage();
+            registerPage.start(registerStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Adding nodes to the login VBox
-        loginBox.getChildren().addAll(titleLabel, usernameBox, passwordBox, loginButton, registerButton);
+        loginBox.getChildren().addAll(titleLabel, usernameField, passwordField, loginButton, registerButton);
 
         // Creating a blue background
-        Rectangle blueBackground = new Rectangle(1000, 800, Color.web("#c6e2ff"));
+        Rectangle blueBackground = new Rectangle(Screen.getPrimary().getBounds().getWidth(), Screen.getPrimary().getBounds().getHeight(), Color.web("#c6e2ff"));
 
-        // Creating a white rectangle background with border radius
+        // Creating a white rectangle background with border radius and border color
         Rectangle whiteRectangle = new Rectangle(400, 400);
         whiteRectangle.setFill(Color.WHITE);
         whiteRectangle.setArcWidth(20); // Adding border radius
         whiteRectangle.setArcHeight(20); // Adding border radius
+        whiteRectangle.setStroke(Color.web("#dddddd")); // Adding border color
 
         // Creating a StackPane to layer the background and content
         StackPane root = new StackPane();
@@ -91,10 +90,25 @@ public class LoginPage extends Application {
         // Centering the white rectangle
         StackPane.setAlignment(whiteRectangle, Pos.CENTER);
 
-        Scene scene = new Scene(root, 800, 600); // Creating a scene
+        Scene scene = new Scene(root, 800, 600); // Creating a scene with fixed size
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
     }
+
+
+
+//    private void handleLogin(String username, String password) {
+//        System.out.println("Username: " + username);
+//        System.out.println("Password: " + password);
+//        // Add logic to verify login credentials and navigate to the next scene
+//    }
+
+    private void handleRegister(Stage primaryStage) {
+        RegisterPage registerPage = new RegisterPage();
+        registerPage.start(primaryStage);
+    }
+
+
 
     private void showRegisterPage(Stage primaryStage) {
         RegisterPage registerPage = new RegisterPage();
