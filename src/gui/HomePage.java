@@ -11,6 +11,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class HomePage extends Application {
     private Label actionLabel; // Declare actionLabel as an instance variable
@@ -22,7 +24,7 @@ public class HomePage extends Application {
         // Creating a VBox layout for home page components
         VBox homeBox = new VBox();
         homeBox.setSpacing(20); // Increased spacing between components
-        homeBox.setAlignment(Pos.CENTER);
+        homeBox.setAlignment(Pos.CENTER); // Center align the components
 
         // Creating a blue background
         Rectangle blueBackground = new Rectangle(800, 600, Color.web("#c6e2ff"));
@@ -33,9 +35,20 @@ public class HomePage extends Application {
         whiteRectangle.setArcWidth(20); // Adding border radius
         whiteRectangle.setArcHeight(20); // Adding border radius
 
-        // Creating a circle for human avatar
-        Circle avatarCircle = new Circle(50, Color.LIGHTBLUE); // Sample color
-        avatarCircle.setStroke(Color.BLACK);
+        // Load the avatar image
+        Image avatarImage = new Image(getClass().getResourceAsStream("/gui/images/avatar.png"));
+
+        // Create an ImageView for the avatar image
+        ImageView avatarImageView = new ImageView(avatarImage);
+        avatarImageView.setFitWidth(100); // Set the width of the image
+        avatarImageView.setFitHeight(100); // Set the height of the image
+
+        // Optional: Set the circle clip to make the image appear as a circle
+        avatarImageView.setClip(new Circle(50, 50, 50));
+
+        // Optional: Add a border to the image
+        avatarImageView.setStyle("-fx-border-color: black; -fx-border-width: 2;");
+
 
         // Text: "Select an action to perform"
         actionLabel = new Label("Select an action to perform");
@@ -60,7 +73,7 @@ public class HomePage extends Application {
         balanceButton.setOnAction(e -> showBalanceInquiryPage(primaryStage));
 
         // Adding nodes to the home VBox
-        homeBox.getChildren().addAll(avatarCircle, actionLabel, buttonBox);
+        homeBox.getChildren().addAll(avatarImageView, actionLabel, buttonBox);
         buttonBox.getChildren().addAll(depositButton, withdrawButton, balanceButton);
 
         // Creating a StackPane to layer the background and content
@@ -92,6 +105,8 @@ public class HomePage extends Application {
         BalanceInquires balanceInquires = new BalanceInquires();
         balanceInquires.start(primaryStage);
     }
+
+    // Other methods...
 
     public static void main(String[] args) {
         launch(args);

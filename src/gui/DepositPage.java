@@ -1,11 +1,14 @@
 package gui;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -38,6 +41,14 @@ public class DepositPage extends Application {
 
         // Creating a blue rectangle for "Current Balance"
         Rectangle currentBalanceRectangle = new Rectangle(598, 70, Color.web("#c6e2ff"));
+
+        // Load the home image
+        Image homeImage = new Image(getClass().getResourceAsStream("/gui/images/home.png"));
+
+        // Create an ImageView for the home image
+        ImageView homeImageView = new ImageView(homeImage);
+        homeImageView.setFitWidth(30); // Set the width of the image
+        homeImageView.setFitHeight(30); // Set the height of the image
 
         // Title: "DEPOSIT"
         Label titleLabel = new Label("DEPOSIT");
@@ -73,11 +84,32 @@ public class DepositPage extends Application {
         root.getChildren().addAll(blueBackground, whiteRectangle, depositBox);
 
         // Centering the deposit VBox
-        StackPane.setAlignment(depositBox, Pos.CENTER);
+        StackPane.setAlignment(depositBox, Pos.CENTER_LEFT);
+
+        // Moving homeImageView to the top left corner
+        StackPane.setAlignment(homeImageView, Pos.TOP_LEFT);
+        StackPane.setMargin(homeImageView, new Insets(20, 0, 0, 20)); // Setting margin to move it slightly down
+
+        // Create a button from the homeImageView
+        Button homeButton = new Button();
+        homeButton.setGraphic(homeImageView);
+        homeButton.setOnAction(e -> showHomePage(primaryStage));
+
+        // Adding homeButton to the root StackPane
+        root.getChildren().add(homeButton);
+        StackPane.setAlignment(homeButton, Pos.TOP_LEFT);
+        StackPane.setMargin(homeButton, new Insets(20)); // Setting margin to move it slightly down and right
+
 
         Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
+    }
+
+    // Method to show the home page
+    private void showHomePage(Stage primaryStage) {
+        HomePage homePage = new HomePage();
+        homePage.start(primaryStage);
     }
 
     public static void main(String[] args) {
