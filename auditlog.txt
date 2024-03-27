@@ -1,1 +1,2 @@
-Fri Mar 22 15:19:24 EDT 2024,123456,Sample Action
+Wed Mar 27 12:17:58 EDT 2024,1234,withdrawal,true
+Wed Mar 27 12:17:58 EDT 2024,1234,check_balance,true

@@ -50,6 +50,14 @@ public class DepositPage extends Application {
         homeImageView.setFitWidth(30); // Set the width of the image
         homeImageView.setFitHeight(30); // Set the height of the image
 
+        // Load the home image
+        Image logoutImage = new Image(getClass().getResourceAsStream("/gui/images/logout.png"));
+
+        // Create an ImageView for the home image
+        ImageView logoutImageView = new ImageView(logoutImage);
+        logoutImageView.setFitWidth(30); // Set the width of the image
+        logoutImageView.setFitHeight(30); // Set the height of the image
+
         // Title: "DEPOSIT"
         Label titleLabel = new Label("DEPOSIT");
         titleLabel.setFont(new Font(24));
@@ -75,6 +83,18 @@ public class DepositPage extends Application {
         // Button: "Deposit"
         Button depositButton = new Button("Deposit");
         depositButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+        depositButton.setOnAction(e -> {
+            // Print deposit to console
+            String deposit = depositMoneyField.getText();
+            System.out.println("Deposit Amount: " + deposit);
+
+            // Keep the existing routing behavior to navigate to the home screen
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Adding nodes to the deposit VBox
         depositBox.getChildren().addAll(titlePane, currentBalanceLabel, depositAmountLabel, depositMoneyField, depositButton);
@@ -86,9 +106,23 @@ public class DepositPage extends Application {
         // Centering the deposit VBox
         StackPane.setAlignment(depositBox, Pos.CENTER_LEFT);
 
+        // Moving logoutImageView to the top right corner
+        StackPane.setAlignment(logoutImageView, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutImageView, new Insets(20, 20, 0, 0)); // Setting margin to move it slightly down and left
+
+        // Create a button from the logoutImageView
+        Button logoutButton = new Button();
+        logoutButton.setGraphic(logoutImageView);
+        logoutButton.setOnAction(e -> showLoginPage(primaryStage));
+
+        // Adding logoutButton to the root StackPane
+        root.getChildren().add(logoutButton);
+        StackPane.setAlignment(logoutButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(logoutButton, new Insets(20)); // Setting margin to move it slightly down and left
+
         // Moving homeImageView to the top left corner
         StackPane.setAlignment(homeImageView, Pos.TOP_LEFT);
-        StackPane.setMargin(homeImageView, new Insets(20, 0, 0, 20)); // Setting margin to move it slightly down
+        StackPane.setMargin(homeImageView, new Insets(20, 0, 0, 20)); // Setting margin to move it slightly down and right
 
         // Create a button from the homeImageView
         Button homeButton = new Button();
@@ -100,10 +134,16 @@ public class DepositPage extends Application {
         StackPane.setAlignment(homeButton, Pos.TOP_LEFT);
         StackPane.setMargin(homeButton, new Insets(20)); // Setting margin to move it slightly down and right
 
-
         Scene scene = new Scene(root, 800, 600); // Creating a scene
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
+
+    }
+
+    // Method to show the login page
+    private void showLoginPage(Stage primaryStage) {
+        LoginPage loginPage = new LoginPage();
+        loginPage.start(primaryStage);
     }
 
     // Method to show the home page

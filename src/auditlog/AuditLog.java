@@ -18,9 +18,10 @@ public class AuditLog {
     }
 
     // Method to add a transaction to the list
-    public void addTransaction(Date time, int customerID, String action) {
-        Transaction transaction = new Transaction(time, customerID, action);
-        transactions.add(transaction);
+    public void addTransaction(Transaction t) {
+
+        transactions.add(t);
+        write_to_log();
     }
 
     // Method to write transactions to log file
@@ -28,7 +29,8 @@ public class AuditLog {
         try {
             FileWriter writer = new FileWriter("auditlog.txt");
             for (Transaction transaction : transactions) {
-                writer.write(transaction.getTime() + "," + transaction.getCustomerID() + "," + transaction.getAction()
+                writer.write(transaction.getTime() + "," + transaction.getCustomerID()
+                        + "," + transaction.getAction() +","+transaction.isStatus()
                         + "\n");
             }
             writer.close();
@@ -61,7 +63,7 @@ public class AuditLog {
         String action = "Sample Action";
 
         // Add the sample transaction to the list
-        addTransaction(time, customerID, action);
+        //addTransaction(time, customerID, action,true);
     }
 
 }

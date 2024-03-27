@@ -1,16 +1,22 @@
 package main;
 
-public class Customer {
+import java.io.Serializable;
+import java.util.Random;
+
+public class Customer implements Serializable {
     // variables
     private int customerID;
     private String username;
     private String password;
 
+    private double bankBalance;
+
     // Constructor
-    public Customer(int customerID, String username, String password) {
+    public Customer(int customerID, String username, String password,double bankBalance) {
         this.customerID = customerID;
         this.username = username;
         this.password = password;
+        this.bankBalance=bankBalance;
     }
 
     // Getters and setters
@@ -36,5 +42,18 @@ public class Customer {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public double getBankBalance() {
+        return bankBalance;
+    }
+
+    public void setBankBalance(double bankBalance) {
+        this.bankBalance = bankBalance;
+    }
+
+    public static int generateCustomerID(){
+
+        return new Random().nextInt(9000) + 1000;
     }
 }
