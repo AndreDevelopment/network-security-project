@@ -83,6 +83,18 @@ public class DepositPage extends Application {
         // Button: "Deposit"
         Button depositButton = new Button("Deposit");
         depositButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+        depositButton.setOnAction(e -> {
+            // Print deposit to console
+            String deposit = depositMoneyField.getText();
+            System.out.println("Deposit Amount: " + deposit);
+
+            // Keep the existing routing behavior to navigate to the home screen
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Adding nodes to the deposit VBox
         depositBox.getChildren().addAll(titlePane, currentBalanceLabel, depositAmountLabel, depositMoneyField, depositButton);

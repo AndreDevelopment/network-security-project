@@ -84,6 +84,18 @@ public class WithdrawalPage extends Application {
         // Button: "Withdrawal"
         Button withdrawalButton = new Button("Withdraw");
         withdrawalButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 150px; -fx-min-height: 40px; -fx-font-weight: bold;");
+        withdrawalButton.setOnAction(e -> {
+            // Print deposit to console
+            String withdrawal = withdrawalMoneyField.getText();
+            System.out.println("Withdrawal Amount: " + withdrawal);
+
+            // Keep the existing routing behavior to navigate to the home screen
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+            // Close the current stage (LoginPage)
+            primaryStage.close();
+        });
 
         // Adding nodes to the withdrawal VBox
         withdrawalBox.getChildren().addAll(titlePane, currentBalanceLabel, withdrawalAmountLabel, withdrawalMoneyField, withdrawalButton);

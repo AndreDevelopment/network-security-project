@@ -1,18 +1,10 @@
 <component name="libraryTable">
   <library name="lib">
     <CLASSES>
-<<<<<<< HEAD
-      <root url="file://C:/javafx-sdk-22/lib" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-    <jarDirectory url="file://C:/javafx-sdk-22/lib" recursive="false" />
-=======
       <root url="file://$PROJECT_DIR$/../../../../Code Programs/java_workspace/javafx-sdk-22/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
     <jarDirectory url="file://$PROJECT_DIR$/../../../../Code Programs/java_workspace/javafx-sdk-22/lib" recursive="false" />
->>>>>>> 5021ed64f08e1f968c0a00c1289f4c40748192a5
   </library>
 </component>

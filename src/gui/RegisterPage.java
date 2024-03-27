@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+
 public class RegisterPage extends Application {
 
     @Override
@@ -65,6 +66,13 @@ public class RegisterPage extends Application {
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         registerButton.setOnAction(e -> {
+            //Print register fields
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+            String name = nameField.getText();
+            String reEnterPassBox = reEnterPassBoxField.getText();
+
+            System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
             // Create an instance of LoginPage and show its stage
             LoginPage loginPage = new LoginPage();
             Stage loginStage = new Stage();

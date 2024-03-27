@@ -1,5 +1,7 @@
 package main;
 
+import auditlog.ProcessInfo;
+
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
@@ -68,6 +70,41 @@ public class KeyCipher {
 
 
         return "Bad Convert";
+    }
+
+
+    public static ProcessInfo convertToProcessInfo(String message)  {
+
+
+        byte[] arr = decode(message);
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(arr);
+        ObjectInput in;
+        try {
+            in = new ObjectInputStream(bis);
+            return (ProcessInfo) in.readObject();
+        } catch (IOException  | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        return null;
+    }
+    public static String objectToBase64String(Object obj) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+            objectOutputStream.writeObject(obj);
+            objectOutputStream.close();
+
+            byte[] bytes = outputStream.toByteArray();
+
+            return Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -171,9 +208,9 @@ public class KeyCipher {
         return truncated;
     }
     // Method to encrypt a message and generate MAC code
-    public static String[] createMAC(String message, Key secretKey) {
+    public static String createMAC(String message, Key secretKey) {
         try {
-            String[] result = new String[2];
+            String result;
 
             // Initialize MAC with HmacSHA256 algorithm
             Mac mac = Mac.getInstance("HmacSHA256");
@@ -188,13 +225,11 @@ public class KeyCipher {
                 macStringBuilder.append(String.format("%02x", b));
             }
 
-            result[0] = macStringBuilder.toString(); // MAC code
-            result[1] = message; // Original message
+            result = macStringBuilder.toString(); // MAC code
+
 
             return result;
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
     }
@@ -218,11 +253,28 @@ public class KeyCipher {
 
             // Compare received MAC with the provided MAC code
             return macCode.equals(receivedMac);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void extendedVerifyMAC(String Message, String macCode, Key secretKey){
+        // Decrypt the message and verify MAC code
+        boolean isMACValid = KeyCipher.verifyMAC(Message, macCode, secretKey);
+        if (isMACValid) {
+            System.out.println(Colour.ANSI_GREEN+ "MAC verification successful. Message integrity maintained."+Colour.ANSI_RESET);
+            System.out.println(Colour.ANSI_PURPLE+ "[MESSAGE]: "+Colour.ANSI_RESET + Message);
+        } else {
+            System.out.println("MAC verification failed! Message may have been tampered with.");
+        }
+    }//end of extendedVerify
+
+    public static boolean isNumerical(String str) {
+        // Regular expression to match a string with only digits, optionally containing a decimal point
+        String regex = "^\\d+(\\.\\d+)?$";
+
+        // Ensure the string matches the regex pattern
+        return str.matches(regex);
     }
 
 
