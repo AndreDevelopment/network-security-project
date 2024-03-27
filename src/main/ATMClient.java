@@ -62,19 +62,20 @@ public class ATMClient {
             Object fromClient;
             Object fromBankServer;
 
-            System.out.println("\nEnter your username: ");
+            System.out.println("\n[LOGIN] Enter your username: ");
             String userName = input.nextLine();
-            System.out.println("Enter your password: ");
+            System.out.println("[LOGIN] Enter your password: ");
             String password = input.nextLine();
 
-
-            fromClient = userName +","+password;
-
-            //Sending the Client public key
+            //Concat message
+            String msg = userName +","+password;
+            //Encrypt & add MAC
+            fromClient = KeyCipher.encrypt(msgEncryptionKey,msg)+","+KeyCipher.createMAC(msg,macKey);
+            //Sending the user pass
             out.writeObject(fromClient);
 
             if ((fromBankServer = in.readObject()) != null) {
-                //System.out.println("Got the Customer Object!");
+
                 signedInCustomer = (Customer) fromBankServer;
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -92,14 +93,14 @@ public class ATMClient {
             Scanner input = new Scanner(System.in);
             String username,password = "",rePassword="-1";
 
-            System.out.println("\nEnter a new username: ");
+            System.out.println("\n[REGISTER] Enter a new username: ");
             username = input.nextLine();
 
             while (!password.equals(rePassword)) {
-                System.out.println("Enter a password");
+                System.out.println("[REGISTER] Enter a password");
                 password = input.nextLine();
 
-                System.out.println("Re-enter a password");
+                System.out.println("[REGISTER] Re-enter a password");
                 rePassword = input.nextLine();
             }
 

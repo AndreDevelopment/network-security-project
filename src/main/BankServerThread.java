@@ -33,7 +33,7 @@ public class BankServerThread extends Thread {
         customerList = new ArrayList<>();
         //Dummy values for our list
         customerList.add(new Customer(1234,"Andre","password1",700));
-        customerList.add(new Customer(4567,"Arshroop","ILoveAndre",10000000));
+        customerList.add(new Customer(4567,"Arshroop","ILoveAndre",100000));
         auditLog = new AuditLog();
 
     }
@@ -69,19 +69,35 @@ public class BankServerThread extends Thread {
     }// end of main
 
     private void authenticateCustomer(ObjectInputStream in,ObjectOutputStream out)  {
+
+        /*
+        * parts 0 -> encrypted message
+        * parts 1 -> MAC code
+        * */
         try {
             Object inputLine;
             //Isolate into userVerification method
             //Username & Password received
             if ((inputLine = in.readObject()) != null) {
 
+                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
                 String[] parts = ((String) inputLine).split(",");
-                String userName = parts[0];
-                String password = parts[1];
 
-               Customer c = findCustomer(userName);
+                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+parts[0]);
+                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+parts[1]);
+                //Decrypt message
+                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,parts[0]);
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
+                //Verify MAC
+                KeyCipher.extendedVerifyMAC(decryptMessage,parts[1],macKey);
 
-                if (verifyUser(userName, password)) {
+                //Adding the customer to our List
+                String[] userPass = decryptMessage.split(",");
+
+
+               Customer c = findCustomer(userPass[0]);
+
+                if (verifyUser(userPass[0], userPass[1])) {
                     System.out.println(Colour.ANSI_GREEN + "\nUser is verified :)" + Colour.ANSI_RESET);
 
                 } else {

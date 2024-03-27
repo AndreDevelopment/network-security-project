@@ -1,2 +1,2 @@
-Wed Mar 27 11:31:35 EDT 2024,6112,withdrawal,false
-Wed Mar 27 11:31:35 EDT 2024,6112,check_balance,true
+Wed Mar 27 12:00:48 EDT 2024,1234,withdrawal,true
+Wed Mar 27 12:00:48 EDT 2024,1234,check_balance,true
