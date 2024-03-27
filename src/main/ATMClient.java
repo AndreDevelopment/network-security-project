@@ -230,19 +230,7 @@ public class ATMClient {
             System.out.println("<-Sent a transaction...");
 
             if ((fromBankServer = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
-                String[] parts = ((String) fromBankServer).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt
-                String originalMsg = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(originalMsg,recvMacCode,macKey);
-                //Final print
+                String originalMsg = getMsg((String) fromBankServer);
 
                 //Just checking if the reply message is a balance or a message
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
@@ -255,6 +243,23 @@ public class ATMClient {
         }
 
     }//end of withdrawal
+
+    private static String getMsg(String fromBankServer) {
+        System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
+        String[] parts = fromBankServer.split(",");
+        String encryptedRes = parts[0];
+        String recvMacCode = parts[1];
+
+        System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
+        System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
+        //Decrypt
+        String originalMsg = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
+
+        //Verify MAC
+        KeyCipher.extendedVerifyMAC(originalMsg,recvMacCode,macKey);
+        //Final print
+        return originalMsg;
+    }
 
     public static void checkBalance(ObjectInputStream in,ObjectOutputStream out){
 
@@ -274,18 +279,7 @@ public class ATMClient {
             System.out.println("<-Sent a transaction...");
 
             if ((fromBankServer = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
-                String[] parts = ((String) fromBankServer).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt
-                String originalMsg = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(originalMsg,recvMacCode,macKey);
+                String originalMsg = getMsg((String) fromBankServer);
                 //Final print
 
                 //Just checking if the reply message is a balance or a message

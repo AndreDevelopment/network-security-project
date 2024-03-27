@@ -118,18 +118,7 @@ public class BankServerThread extends Thread {
 
         try {
             if ((inputLine = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
-                String[] parts = ((String) inputLine).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt message
-                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+                String decryptMessage = getMessage((String) inputLine);
 
                 //Adding the customer to our List
                 String[] userPass = decryptMessage.split(",");
@@ -147,6 +136,22 @@ public class BankServerThread extends Thread {
         }
 
     }//end register customer
+
+    private static String getMessage(String inputLine) {
+        System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
+        String[] parts = inputLine.split(",");
+        String encryptedRes = parts[0];
+        String recvMacCode = parts[1];
+
+        System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
+        System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
+        //Decrypt message
+        String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
+        System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
+        //Verify MAC
+        KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+        return decryptMessage;
+    }
 
     public static void createBothKeys(){
         try {
@@ -233,19 +238,7 @@ public class BankServerThread extends Thread {
 
             //Reading in the Request
             if ((inputLine = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
-                //Separate MAC & msg
-                String[] parts = ((String) inputLine).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt message
-                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+                String decryptMessage = getMessage((String) inputLine);
                 //Covert back to ProcessInfo Object
                 ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
                 //Start operations
@@ -297,19 +290,7 @@ public class BankServerThread extends Thread {
 
             //Reading in the Request
             if ((inputLine = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
-                //Separate MAC & msg
-                String[] parts = ((String) inputLine).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt message
-                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+                String decryptMessage = getMessage((String) inputLine);
                 //Covert back to ProcessInfo Object
                 ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
                 //Start operations
