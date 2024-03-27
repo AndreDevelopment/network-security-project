@@ -22,7 +22,7 @@ public class BankServerThread extends Thread {
     private SecretKey oldSharedKey;
     private static SecretKey newMasterKey,msgEncryptionKey,macKey;
 
-    List<Customer> customerList;
+    static List<Customer> customerList;
 
     private static AuditLog auditLog;
 
@@ -33,7 +33,7 @@ public class BankServerThread extends Thread {
         customerList = new ArrayList<>();
         //Dummy values for our list
         customerList.add(new Customer(1234,"Andre","password1",700));
-        customerList.add(new Customer(4567,"Arshroop","ILoveAndre",10000000));
+        customerList.add(new Customer(4567,"Arshroop","ILoveAndre",100000));
         auditLog = new AuditLog();
 
     }
@@ -51,11 +51,12 @@ public class BankServerThread extends Thread {
             authenticateBankToATM(out, in);
             //Creating the two new keys
             createBothKeys();
+
+            registerCustomer(in,out);
             authenticateCustomer(in,out);
 
-
             withdrawal(in,out);
-
+            checkBalance(in,out);
 
 
             clientSocket.close();
@@ -68,21 +69,35 @@ public class BankServerThread extends Thread {
     }// end of main
 
     private void authenticateCustomer(ObjectInputStream in,ObjectOutputStream out)  {
+
+        /*
+        * parts 0 -> encrypted message
+        * parts 1 -> MAC code
+        * */
         try {
             Object inputLine;
             //Isolate into userVerification method
             //Username & Password received
             if ((inputLine = in.readObject()) != null) {
 
+                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
                 String[] parts = ((String) inputLine).split(",");
-                String userName = parts[0];
-                String password = parts[1];
 
-               Customer c = customerList.stream()
-                        .filter(customer -> customer.getUsername()
-                                .equals(userName)).findFirst().orElse(null);
+                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+parts[0]);
+                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+parts[1]);
+                //Decrypt message
+                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,parts[0]);
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
+                //Verify MAC
+                KeyCipher.extendedVerifyMAC(decryptMessage,parts[1],macKey);
 
-                if (verifyUser(userName, password)) {
+                //Adding the customer to our List
+                String[] userPass = decryptMessage.split(",");
+
+
+               Customer c = findCustomer(userPass[0]);
+
+                if (verifyUser(userPass[0], userPass[1])) {
                     System.out.println(Colour.ANSI_GREEN + "\nUser is verified :)" + Colour.ANSI_RESET);
 
                 } else {
@@ -97,6 +112,46 @@ public class BankServerThread extends Thread {
             throw new RuntimeException(e);
         }
     }//end of Customer authentication
+
+    private static void registerCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+        Object inputLine,outputLine;
+
+        try {
+            if ((inputLine = in.readObject()) != null) {
+                String decryptMessage = getMessage((String) inputLine);
+
+                //Adding the customer to our List
+                String[] userPass = decryptMessage.split(",");
+                customerList.add(new Customer(Customer.generateCustomerID(),userPass[0],userPass[1],0));
+
+                //Send a confirmation message
+                String message = "User has been registered!";
+                outputLine = KeyCipher.encrypt(msgEncryptionKey,message)+","+KeyCipher.createMAC(message,macKey);
+                out.writeObject(outputLine);
+                System.out.println("<-Sending confirm message...");
+
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+    }//end register customer
+
+    private static String getMessage(String inputLine) {
+        System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
+        String[] parts = inputLine.split(",");
+        String encryptedRes = parts[0];
+        String recvMacCode = parts[1];
+
+        System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
+        System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
+        //Decrypt message
+        String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
+        System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
+        //Verify MAC
+        KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+        return decryptMessage;
+    }
 
     public static void createBothKeys(){
         try {
@@ -115,6 +170,7 @@ public class BankServerThread extends Thread {
         }
 
     }
+
 
     private void authenticateBankToATM(ObjectOutputStream out, ObjectInputStream in)  {
         try {
@@ -159,13 +215,18 @@ public class BankServerThread extends Thread {
 
     public boolean verifyUser(String username,String password){
 
-        Customer c = customerList.stream()
-                .filter(customer -> customer.getUsername()
-                        .equals(username)).findFirst().orElse(null);
+        Customer c = findCustomer(username);
 
         return c != null && c.getPassword().equals(password);
 
 
+    }
+
+
+    public static Customer findCustomer(String username){
+       return customerList.stream()
+                .filter(customer -> customer.getUsername()
+                        .equals(username)).findFirst().orElse(null);
     }
 
 
@@ -177,19 +238,7 @@ public class BankServerThread extends Thread {
 
             //Reading in the Request
             if ((inputLine = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
-                //Separate MAC & msg
-                String[] parts = ((String) inputLine).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt message
-                String decryptMessage = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+decryptMessage);
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(decryptMessage,recvMacCode,macKey);
+                String decryptMessage = getMessage((String) inputLine);
                 //Covert back to ProcessInfo Object
                 ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
                 //Start operations
@@ -209,8 +258,8 @@ public class BankServerThread extends Thread {
                     t.setStatus(false);
                 }else{
 
-                    c.setBankBalance(balance-withdraw);
-                    System.out.println("\tNew Balance: "+c.getBankBalance());
+                    findCustomer(c.getUsername()).setBankBalance(balance-withdraw);
+                    System.out.println("\tNew Balance: "+(balance-withdraw));
                     outputLine = c.getBankBalance()+"";
                 }//closing if
 
@@ -233,6 +282,44 @@ public class BankServerThread extends Thread {
         }
 
     }//closing withdraw
+
+    public static void checkBalance(ObjectInputStream in,ObjectOutputStream out){
+        Object inputLine;
+        String outputLine;
+        try {
+
+            //Reading in the Request
+            if ((inputLine = in.readObject()) != null) {
+                String decryptMessage = getMessage((String) inputLine);
+                //Covert back to ProcessInfo Object
+                ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
+                //Start operations
+                Customer c = p.getCustomer();
+                //General Withdrawal code
+                double balance = findCustomer(c.getUsername()).getBankBalance();
+
+
+                Transaction t = new Transaction(new Date(),c.getCustomerID(),"check_balance",true);
+                auditLog.addTransaction(t);
+                /*1. Change t to a String
+                 * 2. encrypt the String
+                 * REMEMBER U DON'T NEED TO DECRYPT
+                 * */
+
+
+                //Encrypt
+                String encryptedOutput = KeyCipher.encrypt(msgEncryptionKey, balance+"");
+                //Add MAC
+                outputLine = encryptedOutput + ","+KeyCipher.createMAC(balance+"",macKey);
+                //Send off
+                out.writeObject(outputLine);
+                System.out.println("<-Sending final balance...");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 
 }
