@@ -14,13 +14,36 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import main.ATMClient;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+
+
+
 
 public class LoginPage extends Application {
-
+    private static boolean hasAuthenticated = false;
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("LOGIN");
 
+
+            ATMClient atmClient = new ATMClient();
+            Socket clientSocket = new Socket("localhost", 23456);
+            ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+            //Get authenticated
+        if (!hasAuthenticated) {
+            atmClient.authenticateBankToATM(in, out);
+            atmClient.createBothKeys();
+            hasAuthenticated =true;
+        }
         // Creating a VBox layout for login components
         VBox loginBox = new VBox();
         loginBox.setSpacing(20); // Increased spacing between components
@@ -49,6 +72,23 @@ public class LoginPage extends Application {
             // Print username and password to console
             String username = usernameField.getText();
             String password = passwordField.getText();
+
+
+            try
+            {
+
+                out.writeObject("L");
+                atmClient.authenticateCustomer(in,out,username,password);
+
+            } catch (UnknownHostException exp) {
+                System.err.println("Don't know about host ");
+                System.exit(1);
+            } catch (IOException ex) {
+                System.err.println("Couldn't get I/O for the connection to " );
+                System.exit(1);
+            } catch (Exception ex1) {
+                throw new RuntimeException(ex1);
+            }//end of catch
             System.out.println("Username: " + username + ", Password: " + password);
 
             // Keep the existing routing behavior to navigate to the home screen
@@ -63,9 +103,11 @@ public class LoginPage extends Application {
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         registerButton.setOnAction(e -> {
-            RegisterPage registerPage = new RegisterPage();
+            RegisterPage registerPage = new RegisterPage(atmClient,clientSocket,out,in);
             Stage registerStage = new Stage();
             registerPage.start(registerStage);
+
+
             // Close the current stage (LoginPage)
             primaryStage.close();
         });
@@ -93,6 +135,8 @@ public class LoginPage extends Application {
         Scene scene = new Scene(root, 800, 600); // Creating a scene with fixed size
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
+
+
     }
 
 
@@ -103,20 +147,28 @@ public class LoginPage extends Application {
 //        // Add logic to verify login credentials and navigate to the next scene
 //    }
 
-    private void handleRegister(Stage primaryStage) {
-        RegisterPage registerPage = new RegisterPage();
-        registerPage.start(primaryStage);
-    }
-
-
-
-    private void showRegisterPage(Stage primaryStage) {
-        RegisterPage registerPage = new RegisterPage();
-        registerPage.start(primaryStage);
-    }
+//    private void handleRegister(Stage primaryStage) {
+//        RegisterPage registerPage = new RegisterPage();
+//        registerPage.start(primaryStage);
+//    }
+//
+//
+//
+//    private void showRegisterPage(Stage primaryStage) {
+//        RegisterPage registerPage = new RegisterPage();
+//        registerPage.start(primaryStage);
+//    }
 
     public static void main(String[] args) {
-        System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
+        //System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
         launch(args);
+
+
+
+            //Need to assess the flow of GUI
+
+
+
+
     }
 }

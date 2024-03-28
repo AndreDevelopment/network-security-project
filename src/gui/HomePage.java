@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.IOException;
+
 public class HomePage extends Application {
     private Label actionLabel; // Declare actionLabel as an instance variable
 
@@ -111,9 +113,13 @@ public class HomePage extends Application {
         primaryStage.show(); // Showing the stage
     }
 
-    private void showLoginPage(Stage primaryStage) {
+    private void showLoginPage(Stage primaryStage)  {
         LoginPage loginPage = new LoginPage();
-        loginPage.start(primaryStage);
+        try {
+            loginPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Method to update the content for the deposit page

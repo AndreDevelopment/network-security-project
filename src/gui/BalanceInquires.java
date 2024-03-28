@@ -14,6 +14,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class BalanceInquires extends Application {
 
     @Override
@@ -153,7 +155,11 @@ public class BalanceInquires extends Application {
     // Method to show the home page
     private void showLoginPage(Stage primaryStage) {
         LoginPage loginPage = new LoginPage();
-        loginPage.start(primaryStage);
+        try {
+            loginPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void showHomePage(Stage primaryStage) {

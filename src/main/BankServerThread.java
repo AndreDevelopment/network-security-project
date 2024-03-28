@@ -47,17 +47,34 @@ public class BankServerThread extends Thread {
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         ) {
 
+            Object inputLine;
+            //Need to assess the flow of GUI
 
-            authenticateBankToATM(out, in);
-            //Creating the two new keys
+            authenticateBankToATM(out,in);
             createBothKeys();
+            while ((inputLine = in.readObject()) != null) {
 
-//            registerCustomer(in,out);
-            authenticateCustomer(in,out);
+                switch ((String)inputLine){
+                    case "R":
+                        registerCustomer(in,out);
+                        break;
+                    case "L":
+                        authenticateCustomer(in,out);
+                        break;
+                    case "W":
+                        withdrawal(in,out);
+                        break;
+                    case "D":
+                        deposit(in,out);
+                        break;
+                    case "C":
+                        checkBalance(in,out);
+                        break;
+                    default:
+                        System.out.println("Wrong call!");
+                }
 
-            //withdrawal(in,out);
-            checkBalance(in,out);
-            //deposit(in, out);
+            }
 
             clientSocket.close();
 
