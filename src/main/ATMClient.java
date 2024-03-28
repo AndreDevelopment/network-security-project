@@ -57,16 +57,11 @@ public class ATMClient {
     }
 
 
-    public  void authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
+    public  boolean authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
         try {
 
             Object fromClient;
             Object fromBankServer;
-
-//            System.out.println("\n[LOGIN] Enter your username: ");
-//            String userName = input.nextLine();
-//            System.out.println("[LOGIN] Enter your password: ");
-//            String password = input.nextLine();
 
             //Concat message
             String msg = username +","+password;
@@ -77,12 +72,15 @@ public class ATMClient {
 
             if ((fromBankServer = in.readObject()) != null) {
 
-                signedInCustomer = (Customer) fromBankServer;
+                //Expecting either a String "Bad" or an actual customer object
+                if (fromBankServer instanceof Customer)
+                    signedInCustomer = (Customer) fromBankServer;
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
+        //Since the customer will be null if not logged in properly I'm return that truth value
+        return signedInCustomer != null;
 
     }//authenticate customer end
 
@@ -91,19 +89,7 @@ public class ATMClient {
         Object fromBankServer,fromClient;
 
         try {
-//            Scanner input = new Scanner(System.in);
-//            String username,password = "",rePassword="-1";
 
-//            System.out.println("\n[REGISTER] Enter a new username: ");
-//            username = input.nextLine();
-//
-//            while (!password.equals(rePassword)) {
-//                System.out.println("[REGISTER] Enter a password");
-//                password = input.nextLine();
-//
-//                System.out.println("[REGISTER] Re-enter a password");
-//                rePassword = input.nextLine();
-//            }
 
             String msg = username+","+password;
             //Gotta encrypt :) & create MAC

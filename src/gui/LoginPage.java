@@ -7,7 +7,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -20,10 +19,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
-
-
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class LoginPage extends Application {
@@ -37,6 +33,8 @@ public class LoginPage extends Application {
             Socket clientSocket = new Socket("localhost", 23456);
             ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+            AtomicBoolean isLoggedIn = new AtomicBoolean(false);
 
             //Get authenticated
         if (!hasAuthenticated) {
@@ -70,35 +68,44 @@ public class LoginPage extends Application {
         loginButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         loginButton.setOnAction(e -> {
             // Print username and password to console
-            String username = usernameField.getText();
-            String password = passwordField.getText();
+
 
             //Executing the login process (ATM -> Bank)
             try
             {
+                String username = usernameField.getText();
+                String password = passwordField.getText();
+                //If login fails make a request again
 
                 out.writeObject("L");
-                atmClient.authenticateCustomer(in,out,username,password);
+                isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
 
-            } catch (UnknownHostException exp) {
-                System.err.println("Don't know about host ");
-                System.exit(1);
+
+
+
             } catch (IOException ex) {
-                System.err.println("Couldn't get I/O for the connection to " );
-                System.exit(1);
-            } catch (Exception ex1) {
-                throw new RuntimeException(ex1);
-            }//end of catch
+                System.out.println("If it reaches here, assume you got I/O hostname exception");
+                throw new RuntimeException(ex);
+            }
 
 
-            System.out.println("Username: " + username + ", Password: " + password);
+            //System.out.println("Username: " + username + ", Password: " + password);
 
             // Keep the existing routing behavior to navigate to the home screen
             HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
-            homePage.start(homeStage);
-            // Close the current stage (LoginPage)
-            primaryStage.close();
+            if (isLoggedIn.get()) {
+                homePage.start(homeStage);
+                // Close the current stage (LoginPage)
+                primaryStage.close();
+            }
+            else {
+
+                //TODO: This is where we would put the logic to create an error label
+                System.out.println("Login Failed! Please enter correct credentials!");
+            }
+
+
         });
 
         // Register button
@@ -108,7 +115,6 @@ public class LoginPage extends Application {
             RegisterPage registerPage = new RegisterPage(atmClient,clientSocket,out,in);
             Stage registerStage = new Stage();
             registerPage.start(registerStage);
-
 
             // Close the current stage (LoginPage)
             primaryStage.close();

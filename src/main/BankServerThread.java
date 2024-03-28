@@ -112,18 +112,18 @@ public class BankServerThread extends Thread {
                 String[] userPass = decryptMessage.split(",");
 
 
-               Customer c = findCustomer(userPass[0]);
-
-
+                //Returning customer if they exist& verified, if not return "Bad" string
                 if (verifyUser(userPass[0], userPass[1])) {
                     System.out.println(Colour.ANSI_GREEN + "\nUser is verified :)" + Colour.ANSI_RESET);
+                    out.writeObject(findCustomer(userPass[0]));
 
                 } else {
                     System.out.println(Colour.ANSI_RED + "\nUser was not verified :(" + Colour.ANSI_RESET);
-
+                    out.writeObject("Bad");
                 }
 
-                out.writeObject(c);
+
+
 
             }
         } catch (IOException | ClassNotFoundException e) {
