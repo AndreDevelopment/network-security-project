@@ -295,9 +295,11 @@ public class ATMClient {
         return originalMsg;
     }
 
-    public  void checkBalance(ObjectInputStream in,ObjectOutputStream out){
+    public  String checkBalance(ObjectInputStream in,ObjectOutputStream out){
 
         Object fromBankServer;
+
+        String finalBalance = "Bad balance";
 
         try {
                 //Consider sending just the customer object?
@@ -315,7 +317,7 @@ public class ATMClient {
             if ((fromBankServer = in.readObject()) != null) {
                 String originalMsg = getMsg((String) fromBankServer);
                 //Final print
-
+                finalBalance = originalMsg;
                 //Just checking if the reply message is a balance or a message
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET + "Your balance: "+originalMsg);
 
@@ -325,7 +327,7 @@ public class ATMClient {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
+        return finalBalance;
     }//end of withdrawal
 
 

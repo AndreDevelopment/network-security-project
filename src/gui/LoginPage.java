@@ -73,7 +73,7 @@ public class LoginPage extends Application {
             String username = usernameField.getText();
             String password = passwordField.getText();
 
-
+            //Executing the login process (ATM -> Bank)
             try
             {
 
@@ -89,10 +89,12 @@ public class LoginPage extends Application {
             } catch (Exception ex1) {
                 throw new RuntimeException(ex1);
             }//end of catch
+
+
             System.out.println("Username: " + username + ", Password: " + password);
 
             // Keep the existing routing behavior to navigate to the home screen
-            HomePage homePage = new HomePage();
+            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
             homePage.start(homeStage);
             // Close the current stage (LoginPage)

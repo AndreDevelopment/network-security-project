@@ -13,10 +13,27 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import main.ATMClient;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class BalanceInquires extends Application {
+
+    private ATMClient atmClient;
+    private Socket clientSocket;
+
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
+    public BalanceInquires(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
+        this.atmClient = atmClient;
+        this.clientSocket = clientSocket;
+        this.out = out;
+        this.in = in;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -68,8 +85,17 @@ public class BalanceInquires extends Application {
         StackPane titlePane = new StackPane();
         titlePane.getChildren().addAll(currentBalanceRectangle, titleLabel);
 
+        //I'm getting balance from ATM Client
+        String currentBalance;
+        try {
+            out.writeObject("C");
+            currentBalance = atmClient.checkBalance(in,out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // Label: "Current Balance"
-        Label currentBalanceLabel = new Label("Current Balance");
+        Label currentBalanceLabel = new Label(currentBalance);
         currentBalanceLabel.setFont(new Font(16));
 
         // Button: "Home screen"
@@ -81,7 +107,7 @@ public class BalanceInquires extends Application {
 
             System.out.println("Navigating to Home Screen...");
             // Create an instance of HomePage and show its stage
-            HomePage homePage = new HomePage();
+            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
             homePage.start(homeStage);
 
@@ -163,7 +189,7 @@ public class BalanceInquires extends Application {
     }
 
     private void showHomePage(Stage primaryStage) {
-        HomePage homePage = new HomePage();
+        HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
         homePage.start(primaryStage);
     }
 

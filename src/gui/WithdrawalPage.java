@@ -14,11 +14,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import main.ATMClient;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class WithdrawalPage extends Application {
+    private ATMClient atmClient;
+    private Socket clientSocket;
 
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
+    public WithdrawalPage(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
+        this.atmClient = atmClient;
+        this.clientSocket = clientSocket;
+        this.out = out;
+        this.in = in;
+    }
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("WITHDRAWAL");
@@ -92,7 +107,7 @@ public class WithdrawalPage extends Application {
             System.out.println("Withdrawal Amount: " + withdrawal);
 
             // Keep the existing routing behavior to navigate to the home screen
-            HomePage homePage = new HomePage();
+            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
             homePage.start(homeStage);
             // Close the current stage (LoginPage)
@@ -153,7 +168,7 @@ public class WithdrawalPage extends Application {
     }
 
     private void showHomePage(Stage primaryStage) {
-        HomePage homePage = new HomePage();
+        HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
         homePage.start(primaryStage);
     }
 
