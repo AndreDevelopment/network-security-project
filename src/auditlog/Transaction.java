@@ -51,4 +51,8 @@ public class Transaction {
     public void setAction(String action) {
         this.action = action;
     }
+    @Override
+    public String toString() {
+        return time.toString() + "," + customerID + "," + action + "," + status;
+    }
 }
