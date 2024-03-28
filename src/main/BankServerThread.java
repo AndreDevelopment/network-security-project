@@ -55,9 +55,9 @@ public class BankServerThread extends Thread {
             registerCustomer(in,out);
             authenticateCustomer(in,out);
 
-            withdrawal(in,out);
+            //withdrawal(in,out);
             checkBalance(in,out);
-
+            //deposit(in, out);
 
             clientSocket.close();
 
@@ -258,7 +258,7 @@ public class BankServerThread extends Thread {
                     t.setStatus(false);
                 }else{
 
-                    findCustomer(c.getUsername()).setBankBalance(balance-withdraw);
+                    c.setBankBalance(balance-withdraw);
                     System.out.println("\tNew Balance: "+(balance-withdraw));
                     outputLine = c.getBankBalance()+"";
                 }//closing if
@@ -267,10 +267,64 @@ public class BankServerThread extends Thread {
                 * 2. encrypt the String
                 * REMEMBER U DON'T NEED TO DECRYPT
                 * */
-
+                String transactionString = t.toString();
+                String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,transactionString);
+                auditLog.addEncryptTransaction(encryptedResult);
                 auditLog.addTransaction(t);
                 //Encrypt
                String encryptedOutput = KeyCipher.encrypt(msgEncryptionKey, outputLine);
+                //Add MAC
+                outputLine = encryptedOutput + ","+KeyCipher.createMAC(outputLine,macKey);
+                //Send off
+                out.writeObject(outputLine);
+                System.out.println("<-Sending final balance...");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }//closing withdraw
+
+    public void deposit(ObjectInputStream in,ObjectOutputStream out){
+        Object inputLine;
+        String outputLine;
+        try {
+
+            //Reading in the Request
+            if ((inputLine = in.readObject()) != null) {
+                String decryptMessage = getMessage((String) inputLine);
+                //Covert back to ProcessInfo Object
+                ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
+                //Start operations
+                Customer c = p.getCustomer();
+                //General Withdrawal code
+                double balance = c.getBankBalance();
+                double deposit = p.getAmount();
+
+                Transaction t = new Transaction(new Date(),c.getCustomerID(),"deposit",true);
+
+                System.out.println("\tCurrent balance: "+balance+" | Deposit amount: "+deposit);
+                if (deposit<0){
+                    outputLine = "Are you stupid? How can you deposit negative money";
+                    t.setStatus(false);
+                }else{
+
+                    c.setBankBalance(balance+deposit);
+                    System.out.println("\tNew Balance: "+(balance+deposit));
+                    outputLine = c.getBankBalance()+"";
+
+                }//closing if
+
+                /*1. Change t to a String
+                 * 2. encrypt the String
+                 * REMEMBER U DON'T NEED TO DECRYPT
+                 * */
+                String transactionString = t.toString();
+                String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,transactionString);
+                auditLog.addEncryptTransaction(encryptedResult);
+                auditLog.addTransaction(t);
+                //Encrypt
+                String encryptedOutput = KeyCipher.encrypt(msgEncryptionKey, outputLine);
                 //Add MAC
                 outputLine = encryptedOutput + ","+KeyCipher.createMAC(outputLine,macKey);
                 //Send off
@@ -300,12 +354,15 @@ public class BankServerThread extends Thread {
 
 
                 Transaction t = new Transaction(new Date(),c.getCustomerID(),"check_balance",true);
-                auditLog.addTransaction(t);
+                //auditLog.addTransaction(t);
                 /*1. Change t to a String
                  * 2. encrypt the String
                  * REMEMBER U DON'T NEED TO DECRYPT
                  * */
-
+                String transactionString = t.toString();
+                String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,transactionString);
+                auditLog.addEncryptTransaction(encryptedResult);
+                auditLog.addTransaction(t);
 
                 //Encrypt
                 String encryptedOutput = KeyCipher.encrypt(msgEncryptionKey, balance+"");

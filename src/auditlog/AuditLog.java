@@ -21,7 +21,23 @@ public class AuditLog {
     public void addTransaction(Transaction t) {
 
         transactions.add(t);
-        write_to_log();
+        for (Transaction transaction : transactions) {
+            System.out.println("Audit Log: \n" + transaction.getTime() + "," + transaction.getCustomerID()
+                    + "," + transaction.getAction() +","+transaction.isStatus()
+                    + "\n");
+        }
+        //write_to_log();
+    }
+    public void addEncryptTransaction(String s){
+        try {
+            FileWriter writer = new FileWriter("auditlog.txt");
+            //String stringToWrite = "your string value";
+
+            writer.write(s);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Method to write transactions to log file

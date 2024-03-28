@@ -40,8 +40,8 @@ public class ATMClient {
             registerCustomer(in,out);
 
             authenticateCustomer(in, out);
-
-            withdrawal(in,out);
+            //deposit(in, out);
+            //withdrawal(in,out);
             checkBalance(in,out);
 
         } catch (UnknownHostException e) {
@@ -243,6 +243,39 @@ public class ATMClient {
         }
 
     }//end of withdrawal
+
+    public static void deposit(ObjectInputStream in,ObjectOutputStream out){
+
+        Object fromBankServer;
+
+        try {
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,400);
+
+            //Covert to a string
+            String result = KeyCipher.objectToBase64String(processInfo);
+
+            //Encrypt the object
+            String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,result);
+            //Add the MAC code
+            String fromClient = encryptedResult+","+KeyCipher.createMAC(result,macKey);
+            //Send it off
+            out.writeObject(fromClient);
+            System.out.println("<-Sent a transaction...");
+
+            if ((fromBankServer = in.readObject()) != null) {
+                String originalMsg = getMsg((String) fromBankServer);
+
+                //Just checking if the reply message is a balance or a message
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
+                        + (KeyCipher.isNumerical(originalMsg)?"New balance: "+originalMsg:originalMsg));
+
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }//end of deposit
 
     private static String getMsg(String fromBankServer) {
         System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
