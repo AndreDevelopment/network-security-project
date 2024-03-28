@@ -15,60 +15,56 @@ import java.util.Scanner;
 
 public class ATMClient {
 
-    private static SecretKey oldSharedKey;
-    private static SecretKey newMasterKey,msgEncryptionKey,macKey;
+    private  SecretKey oldSharedKey;
+    private  SecretKey newMasterKey,msgEncryptionKey,macKey;
 
-    private static Customer signedInCustomer;
-    public static void main(String[] args) throws IOException {
+    private  Customer signedInCustomer;
 
+    public ATMClient() {
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
-        String hostName = "localhost";
-        int portNumber = Integer.parseInt("23456");
+    }
 
-        try (
-                Socket clientSocket = new Socket(hostName, portNumber);
+    public SecretKey getMsgEncryptionKey() {
+        return msgEncryptionKey;
+    }
 
-                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+    public SecretKey getMacKey() {
+        return macKey;
+    }
 
-        ) {
+    public SecretKey getOldSharedKey() {
+        return oldSharedKey;
+    }
 
-            authenticateBankToATM(in, out);
+    public void setOldSharedKey(SecretKey oldSharedKey) {
+        this.oldSharedKey = oldSharedKey;
+    }
 
-            createBothKeys();
+    public SecretKey getNewMasterKey() {
+        return newMasterKey;
+    }
 
-            registerCustomer(in,out);
+    public void setNewMasterKey(SecretKey newMasterKey) {
+        this.newMasterKey = newMasterKey;
+    }
 
-            authenticateCustomer(in, out);
-            //deposit(in, out);
-            //withdrawal(in,out);
-            checkBalance(in,out);
+    public Customer getSignedInCustomer() {
+        return signedInCustomer;
+    }
 
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                    hostName);
-            System.exit(1);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }// end of main
+    public void setSignedInCustomer(Customer signedInCustomer) {
+        this.signedInCustomer = signedInCustomer;
+    }
 
-    private static void authenticateCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+
+    public  boolean authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
         try {
-            Scanner input = new Scanner(System.in);
+
             Object fromClient;
             Object fromBankServer;
 
-            System.out.println("\n[LOGIN] Enter your username: ");
-            String userName = input.nextLine();
-            System.out.println("[LOGIN] Enter your password: ");
-            String password = input.nextLine();
-
             //Concat message
-            String msg = userName +","+password;
+            String msg = username +","+password;
             //Encrypt & add MAC
             fromClient = KeyCipher.encrypt(msgEncryptionKey,msg)+","+KeyCipher.createMAC(msg,macKey);
             //Sending the user pass
@@ -76,33 +72,24 @@ public class ATMClient {
 
             if ((fromBankServer = in.readObject()) != null) {
 
-                signedInCustomer = (Customer) fromBankServer;
+                //Expecting either a String "Bad" or an actual customer object
+                if (fromBankServer instanceof Customer)
+                    signedInCustomer = (Customer) fromBankServer;
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
+        //Since the customer will be null if not logged in properly I'm return that truth value
+        return signedInCustomer != null;
 
     }//authenticate customer end
 
-    private static void registerCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+    public void registerCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
 
         Object fromBankServer,fromClient;
 
         try {
-            Scanner input = new Scanner(System.in);
-            String username,password = "",rePassword="-1";
 
-            System.out.println("\n[REGISTER] Enter a new username: ");
-            username = input.nextLine();
-
-            while (!password.equals(rePassword)) {
-                System.out.println("[REGISTER] Enter a password");
-                password = input.nextLine();
-
-                System.out.println("[REGISTER] Re-enter a password");
-                rePassword = input.nextLine();
-            }
 
             String msg = username+","+password;
             //Gotta encrypt :) & create MAC
@@ -138,7 +125,7 @@ public class ATMClient {
 
     }//end register customer
 
-    private static void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out)  {
+    public void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out)  {
         try {
             Object fromBankServer;
             Object fromClient;
@@ -179,7 +166,7 @@ public class ATMClient {
             throw new RuntimeException(e);
         }
     }// end authenticate Bank to ATM
-    private static void MAC(String message, Key macKey, ObjectOutputStream out) {
+    private  void MAC(String message, Key macKey, ObjectOutputStream out) {
         try {
 
             // Encrypt the message and get MAC code
@@ -193,7 +180,7 @@ public class ATMClient {
         }
     }//end of MAC
 
-    public static void createBothKeys(){
+    public  void createBothKeys(){
         try {
             //Creating the two new keys
             byte[] info1 = "key_for_encryption".getBytes();
@@ -211,7 +198,7 @@ public class ATMClient {
 
     }
 
-    public static void withdrawal(ObjectInputStream in,ObjectOutputStream out){
+    public  void withdrawal(ObjectInputStream in,ObjectOutputStream out){
 
         Object fromBankServer;
 
@@ -244,7 +231,7 @@ public class ATMClient {
 
     }//end of withdrawal
 
-    public static void deposit(ObjectInputStream in,ObjectOutputStream out){
+    public  void deposit(ObjectInputStream in,ObjectOutputStream out){
 
         Object fromBankServer;
 
@@ -277,7 +264,7 @@ public class ATMClient {
 
     }//end of deposit
 
-    private static String getMsg(String fromBankServer) {
+    private  String getMsg(String fromBankServer) {
         System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
         String[] parts = fromBankServer.split(",");
         String encryptedRes = parts[0];
@@ -294,9 +281,11 @@ public class ATMClient {
         return originalMsg;
     }
 
-    public static void checkBalance(ObjectInputStream in,ObjectOutputStream out){
+    public  String checkBalance(ObjectInputStream in,ObjectOutputStream out){
 
         Object fromBankServer;
+
+        String finalBalance = "Bad balance";
 
         try {
                 //Consider sending just the customer object?
@@ -314,7 +303,7 @@ public class ATMClient {
             if ((fromBankServer = in.readObject()) != null) {
                 String originalMsg = getMsg((String) fromBankServer);
                 //Final print
-
+                finalBalance = originalMsg;
                 //Just checking if the reply message is a balance or a message
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET + "Your balance: "+originalMsg);
 
@@ -324,7 +313,7 @@ public class ATMClient {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
+        return finalBalance;
     }//end of withdrawal
 
 

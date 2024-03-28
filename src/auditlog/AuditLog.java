@@ -1,9 +1,6 @@
 package auditlog;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,10 +27,12 @@ public class AuditLog {
     }
     public void addEncryptTransaction(String s){
         try {
-            FileWriter writer = new FileWriter("auditlog.txt");
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("auditlog.txt",true));
             //String stringToWrite = "your string value";
 
             writer.write(s);
+            writer.write(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

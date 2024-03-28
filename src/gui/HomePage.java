@@ -14,9 +14,39 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import main.ATMClient;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class HomePage extends Application {
     private Label actionLabel; // Declare actionLabel as an instance variable
+
+
+    private static ATMClient atmClient;
+    private static Socket clientSocket;
+
+    private static ObjectOutputStream out;
+    private static ObjectInputStream in;
+
+    private static HomePage instance;
+
+    private HomePage() {
+
+    }
+
+    public static HomePage getInstance(ATMClient atm, Socket client, ObjectOutputStream outSt, ObjectInputStream inSt){
+        if (instance==null) {
+            instance = new HomePage();
+            atmClient = atm;
+            clientSocket = client;
+            out = outSt;
+            in = inSt;
+        }
+        return instance;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -79,7 +109,13 @@ public class HomePage extends Application {
         // Event handlers for the buttons
         depositButton.setOnAction(e -> showDepositPage(primaryStage));
         withdrawButton.setOnAction(e -> showWithdrawalPage(primaryStage));
-        balanceButton.setOnAction(e -> showBalanceInquiryPage(primaryStage));
+        balanceButton.setOnAction(e -> {
+
+            showBalanceInquiryPage(primaryStage);
+
+
+
+        });
 
         // Adding nodes to the home VBox
         homeBox.getChildren().addAll(avatarImageView, actionLabel, buttonBox);
@@ -111,26 +147,30 @@ public class HomePage extends Application {
         primaryStage.show(); // Showing the stage
     }
 
-    private void showLoginPage(Stage primaryStage) {
+    private void showLoginPage(Stage primaryStage)  {
         LoginPage loginPage = new LoginPage();
-        loginPage.start(primaryStage);
+        try {
+            loginPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Method to update the content for the deposit page
     private void showDepositPage(Stage primaryStage) {
-        DepositPage depositPage = new DepositPage();
+        DepositPage depositPage = new DepositPage(atmClient,clientSocket,out,in);
         depositPage.start(primaryStage);
     }
 
     // Method to update the content for the withdrawal page
     private void showWithdrawalPage(Stage primaryStage) {
-        WithdrawalPage withdrawalPage = new WithdrawalPage();
+        WithdrawalPage withdrawalPage = new WithdrawalPage(atmClient,clientSocket,out,in);
         withdrawalPage.start(primaryStage);
     }
 
     // Method to update the content for the balance inquiry page
     private void showBalanceInquiryPage(Stage primaryStage) {
-        BalanceInquires balanceInquires = new BalanceInquires();
+        BalanceInquires balanceInquires = new BalanceInquires(atmClient,clientSocket,out,in);
         balanceInquires.start(primaryStage);
     }
 
