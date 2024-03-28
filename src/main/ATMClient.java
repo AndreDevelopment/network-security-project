@@ -37,7 +37,7 @@ public class ATMClient {
 
             createBothKeys();
 
-            registerCustomer(in,out);
+//            registerCustomer(in,out);
 
             authenticateCustomer(in, out);
             //deposit(in, out);

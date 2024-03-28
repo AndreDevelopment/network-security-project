@@ -20,7 +20,7 @@ public class BankServerThread extends Thread {
     private final Socket clientSocket;
 
     private SecretKey oldSharedKey;
-    private static SecretKey newMasterKey,msgEncryptionKey,macKey;
+    private SecretKey newMasterKey,msgEncryptionKey,macKey;
 
     static List<Customer> customerList;
 
@@ -52,7 +52,7 @@ public class BankServerThread extends Thread {
             //Creating the two new keys
             createBothKeys();
 
-            registerCustomer(in,out);
+//            registerCustomer(in,out);
             authenticateCustomer(in,out);
 
             //withdrawal(in,out);
@@ -97,6 +97,7 @@ public class BankServerThread extends Thread {
 
                Customer c = findCustomer(userPass[0]);
 
+
                 if (verifyUser(userPass[0], userPass[1])) {
                     System.out.println(Colour.ANSI_GREEN + "\nUser is verified :)" + Colour.ANSI_RESET);
 
@@ -113,7 +114,7 @@ public class BankServerThread extends Thread {
         }
     }//end of Customer authentication
 
-    private static void registerCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+    private  void registerCustomer(ObjectInputStream in, ObjectOutputStream out)  {
         Object inputLine,outputLine;
 
         try {
@@ -137,7 +138,7 @@ public class BankServerThread extends Thread {
 
     }//end register customer
 
-    private static String getMessage(String inputLine) {
+    private  String getMessage(String inputLine) {
         System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM ATM: "+Colour.ANSI_RESET);
         String[] parts = inputLine.split(",");
         String encryptedRes = parts[0];
@@ -153,7 +154,7 @@ public class BankServerThread extends Thread {
         return decryptMessage;
     }
 
-    public static void createBothKeys(){
+    public  void createBothKeys(){
         try {
             //Creating the two new keys
             byte[] info1 = "key_for_encryption".getBytes();
@@ -223,7 +224,7 @@ public class BankServerThread extends Thread {
     }
 
 
-    public static Customer findCustomer(String username){
+    public  Customer findCustomer(String username){
        return customerList.stream()
                 .filter(customer -> customer.getUsername()
                         .equals(username)).findFirst().orElse(null);
@@ -337,7 +338,7 @@ public class BankServerThread extends Thread {
 
     }//closing withdraw
 
-    public static void checkBalance(ObjectInputStream in,ObjectOutputStream out){
+    public void checkBalance(ObjectInputStream in,ObjectOutputStream out){
         Object inputLine;
         String outputLine;
         try {
@@ -376,7 +377,7 @@ public class BankServerThread extends Thread {
             e.printStackTrace();
         }
 
-    }
+    }//check balance
 
 
 }
