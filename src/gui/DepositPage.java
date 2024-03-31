@@ -37,7 +37,13 @@ public class DepositPage extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException{
+
+        ATMClient atmClient = new ATMClient();
+        Socket clientSocket = new Socket("localhost", 23456);
+        ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
         primaryStage.setTitle("DEPOSIT");
 
         // Creating a VBox layout for deposit page components
@@ -106,6 +112,20 @@ public class DepositPage extends Application {
             // Print deposit to console
             String deposit = depositMoneyField.getText();
             System.out.println("Deposit Amount: " + deposit);
+            try
+            {
+                //Executing the deposit process (ATM -> Bank)
+                out.writeObject("D");
+                atmClient.deposit(in, out, deposit);
+
+
+
+
+            } catch (IOException ex) {
+                System.out.println("If it reaches here, assume you got I/O hostname exception");
+                throw new RuntimeException(ex);
+            }
+
 
             // Keep the existing routing behavior to navigate to the home screen
             HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);

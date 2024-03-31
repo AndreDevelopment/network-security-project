@@ -159,13 +159,21 @@ public class HomePage extends Application {
     // Method to update the content for the deposit page
     private void showDepositPage(Stage primaryStage) {
         DepositPage depositPage = new DepositPage(atmClient,clientSocket,out,in);
+        try {
         depositPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Method to update the content for the withdrawal page
     private void showWithdrawalPage(Stage primaryStage) {
         WithdrawalPage withdrawalPage = new WithdrawalPage(atmClient,clientSocket,out,in);
+        try {
         withdrawalPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Method to update the content for the balance inquiry page
