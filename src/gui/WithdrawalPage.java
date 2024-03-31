@@ -35,7 +35,12 @@ public class WithdrawalPage extends Application {
         this.in = in;
     }
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException{
+
+        ATMClient atmClient = new ATMClient();
+        Socket clientSocket = new Socket("localhost", 23456);
+        ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         primaryStage.setTitle("WITHDRAWAL");
 
         // Creating a VBox layout for withdrawal page components
@@ -105,7 +110,15 @@ public class WithdrawalPage extends Application {
             // Print deposit to console
             String withdrawal = withdrawalMoneyField.getText();
             System.out.println("Withdrawal Amount: " + withdrawal);
-
+            try
+            {
+                //Executing the withdrawal process (ATM -> Bank)
+                out.writeObject("W");
+                atmClient.withdrawal(in, out, withdrawal);
+            } catch (IOException ex) {
+                System.out.println("If it reaches here, assume you got I/O hostname exception");
+                throw new RuntimeException(ex);
+            }
             // Keep the existing routing behavior to navigate to the home screen
             HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();

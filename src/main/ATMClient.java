@@ -198,12 +198,13 @@ public class ATMClient {
 
     }
 
-    public  void withdrawal(ObjectInputStream in,ObjectOutputStream out){
+    public  void withdrawal(ObjectInputStream in,ObjectOutputStream out, String amount){
 
         Object fromBankServer;
-
+        double withdrawal_amount = Double.parseDouble(amount);
+        System.out.println(withdrawal_amount);
         try {
-            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,400);
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,withdrawal_amount);
 
             //Covert to a string
             String result = KeyCipher.objectToBase64String(processInfo);
@@ -231,12 +232,13 @@ public class ATMClient {
 
     }//end of withdrawal
 
-    public  void deposit(ObjectInputStream in,ObjectOutputStream out){
+    public  void deposit(ObjectInputStream in,ObjectOutputStream out, String amount){
 
         Object fromBankServer;
-
+        double deposit_amount = Double.parseDouble(amount);
+        System.out.println(deposit_amount);
         try {
-            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,400);
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,deposit_amount);
 
             //Covert to a string
             String result = KeyCipher.objectToBase64String(processInfo);
