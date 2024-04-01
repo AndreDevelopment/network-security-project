@@ -43,6 +43,12 @@ public class LoginPage extends Application {
         }
     }
 
+
+
+
+
+
+
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("LOGIN");
@@ -84,8 +90,14 @@ public class LoginPage extends Application {
             try {
                 String username = usernameField.getText();
                 String password = passwordField.getText();
-                out.writeObject("L");
-                isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
+
+                if (username.isEmpty() || password.isEmpty()){
+                    System.out.println("Text field is empty");
+                }else{
+                    out.writeObject("L");
+                    isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
+                }
+
             } catch (IOException ex) {
                 System.out.println("If it reaches here, assume you got I/O hostname exception");
                 throw new RuntimeException(ex);
@@ -95,6 +107,7 @@ public class LoginPage extends Application {
             HomePage homePage = HomePage.getInstance(atmClient, clientSocket, out, in);
             Stage homeStage = new Stage();
             if (isLoggedIn.get()) {
+                System.out.println("Successful Login!");
                 homePage.start(homeStage);
                 // Close the current stage (LoginPage)
                 primaryStage.close();
@@ -142,6 +155,7 @@ public class LoginPage extends Application {
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
     }
+
 
     public static void main(String[] args) {
         launch(args);
