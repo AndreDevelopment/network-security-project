@@ -106,6 +106,7 @@ public class WithdrawalPage extends Application {
         withdrawalButton.setOnAction(e -> {
             // Print deposit to console
             String withdrawal = withdrawalMoneyField.getText();
+            //TO DO: Add label checking withdrawal and saying this amount cannot be withdrawn
             System.out.println("Withdrawal Amount: " + withdrawal);
             try
             {

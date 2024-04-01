@@ -105,36 +105,36 @@ public class RegisterPage extends Application {
                 System.out.println("Please try again");
             } else {
 
+                try {
+                    //Initial authentication
+                    out.writeObject("R");
+                    atmClient.registerCustomer(in, out, username, password);
 
+                } catch (UnknownHostException exp) {
+                    System.err.println("Don't know about host ");
+                    System.exit(1);
+                } catch (IOException ex) {
+                    System.err.println("Couldn't get I/O for the connection to ");
+                    System.exit(1);
+                } catch (Exception ex1) {
+                    throw new RuntimeException(ex1);
+                }//end of catch
+
+                System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
+                // Create an instance of LoginPage and show its stage
+                LoginPage loginPage = new LoginPage();
+                Stage loginStage = new Stage();
+                try {
+                    loginPage.start(loginStage);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                // Close the current stage (RegisterPage)
+                primaryStage.close();
             }
 
 
-            try {
-                //Initial authentication
-                out.writeObject("R");
-                atmClient.registerCustomer(in, out, username, password);
 
-            } catch (UnknownHostException exp) {
-                System.err.println("Don't know about host ");
-                System.exit(1);
-            } catch (IOException ex) {
-                System.err.println("Couldn't get I/O for the connection to ");
-                System.exit(1);
-            } catch (Exception ex1) {
-                throw new RuntimeException(ex1);
-            }//end of catch
-
-            System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
-            // Create an instance of LoginPage and show its stage
-            LoginPage loginPage = new LoginPage();
-            Stage loginStage = new Stage();
-            try {
-                loginPage.start(loginStage);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            // Close the current stage (RegisterPage)
-            primaryStage.close();
         });
 
         // Creating an HBox to center the register button
