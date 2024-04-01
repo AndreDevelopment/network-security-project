@@ -43,13 +43,12 @@ public class LoginPage extends Application {
         }
     }
 
-<<<<<<< HEAD
 
 
-    private static boolean hasAuthenticated = false;
 
-=======
->>>>>>> 9036e6a8e3c1c08269530725715737020bd410e2
+
+
+
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("LOGIN");
@@ -91,8 +90,14 @@ public class LoginPage extends Application {
             try {
                 String username = usernameField.getText();
                 String password = passwordField.getText();
-                out.writeObject("L");
-                isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
+
+                if (username.isEmpty() || password.isEmpty()){
+                    System.out.println("Text field is empty");
+                }else{
+                    out.writeObject("L");
+                    isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
+                }
+
             } catch (IOException ex) {
                 System.out.println("If it reaches here, assume you got I/O hostname exception");
                 throw new RuntimeException(ex);
@@ -102,6 +107,7 @@ public class LoginPage extends Application {
             HomePage homePage = HomePage.getInstance(atmClient, clientSocket, out, in);
             Stage homeStage = new Stage();
             if (isLoggedIn.get()) {
+                System.out.println("Successful Login!");
                 homePage.start(homeStage);
                 // Close the current stage (LoginPage)
                 primaryStage.close();

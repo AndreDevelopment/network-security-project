@@ -269,10 +269,10 @@ public class BankServerThread extends Thread {
 
                 System.out.println("\tCurrent balance: "+balance+" | Withdraw amount: "+withdraw);
                 if (withdraw>balance){
-                    outputLine = "You cannot withdraw that amount broke bitch";
+                    outputLine = "You cannot withdraw that amount";
                     t.setStatus(false);
                 }else if (withdraw<0){
-                    outputLine = "Are you stupid? How can you withdraw negative money";
+                    outputLine = "You cannot withdraw negative money";
                     t.setStatus(false);
                 }else{
 
@@ -323,7 +323,7 @@ public class BankServerThread extends Thread {
 
                 System.out.println("\tCurrent balance: "+balance+" | Deposit amount: "+deposit);
                 if (deposit<0){
-                    outputLine = "Are you stupid? How can you deposit negative money";
+                    outputLine = "You cannot deposit negative money";
                     t.setStatus(false);
                 }else{
 
