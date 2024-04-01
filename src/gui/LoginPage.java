@@ -23,24 +23,73 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class LoginPage extends Application {
+
+    private static ATMClient atmClient;
+    private static Socket clientSocket;
+    private static ObjectOutputStream out;
+
+    private static ObjectInputStream in;
+
+
+
+
+
+    public LoginPage(){
+        if (atmClient==null){
+            try {
+                atmClient = new ATMClient();
+                clientSocket = new Socket("localhost", 23456);
+                out = new ObjectOutputStream(clientSocket.getOutputStream());
+                in = new ObjectInputStream(clientSocket.getInputStream());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    }
+
+//    private static ATMClient atmClient;
+//    private static Socket clientSocket;
+//
+//    private static ObjectOutputStream out;
+//    private static ObjectInputStream in;
+//
+//    private static LoginPage instance;
+//
+//    public LoginPage() {
+//
+//    }
+//
+//    public static LoginPage getInstance(){
+//        if (instance==null) {
+//
+//            try {
+//                instance = new LoginPage();
+//                ATMClient atmClient = new ATMClient();
+//                Socket clientSocket = new Socket("localhost", 23456);
+//                ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
+//                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        return instance;
+//    }
+
     private static boolean hasAuthenticated = false;
+
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("LOGIN");
 
 
-            ATMClient atmClient = new ATMClient();
-            Socket clientSocket = new Socket("localhost", 23456);
-            ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+        AtomicBoolean isLoggedIn = new AtomicBoolean(false);
 
-            AtomicBoolean isLoggedIn = new AtomicBoolean(false);
-
-            //Get authenticated
+        //Get authenticated
         if (!hasAuthenticated) {
             atmClient.authenticateBankToATM(in, out);
             atmClient.createBothKeys();
-            hasAuthenticated =true;
+            hasAuthenticated = true;
         }
         // Creating a VBox layout for login components
         VBox loginBox = new VBox();
@@ -71,16 +120,13 @@ public class LoginPage extends Application {
 
 
             //Executing the login process (ATM -> Bank)
-            try
-            {
+            try {
                 String username = usernameField.getText();
                 String password = passwordField.getText();
                 //If login fails make a request again
 
                 out.writeObject("L");
                 isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
-
-
 
 
             } catch (IOException ex) {
@@ -92,14 +138,13 @@ public class LoginPage extends Application {
             //System.out.println("Username: " + username + ", Password: " + password);
 
             // Keep the existing routing behavior to navigate to the home screen
-            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
+            HomePage homePage = HomePage.getInstance(atmClient, clientSocket, out, in);
             Stage homeStage = new Stage();
             if (isLoggedIn.get()) {
                 homePage.start(homeStage);
                 // Close the current stage (LoginPage)
                 primaryStage.close();
-            }
-            else {
+            } else {
 
                 //TODO: This is where we would put the logic to create an error label
                 System.out.println("Login Failed! Please enter correct credentials!");
@@ -112,7 +157,7 @@ public class LoginPage extends Application {
         Button registerButton = new Button("Register");
         registerButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         registerButton.setOnAction(e -> {
-            RegisterPage registerPage = new RegisterPage(atmClient,clientSocket,out,in);
+            RegisterPage registerPage = new RegisterPage(atmClient, clientSocket, out, in);
             Stage registerStage = new Stage();
             registerPage.start(registerStage);
 
@@ -148,7 +193,6 @@ public class LoginPage extends Application {
     }
 
 
-
 //    private void handleLogin(String username, String password) {
 //        System.out.println("Username: " + username);
 //        System.out.println("Password: " + password);
@@ -172,10 +216,7 @@ public class LoginPage extends Application {
         launch(args);
 
 
-
-            //Need to assess the flow of GUI
-
-
+        //Need to assess the flow of GUI
 
 
     }

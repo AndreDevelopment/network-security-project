@@ -24,40 +24,12 @@ public class ATMClient {
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
     }
 
-    public SecretKey getMsgEncryptionKey() {
-        return msgEncryptionKey;
-    }
 
-    public SecretKey getMacKey() {
-        return macKey;
-    }
 
-    public SecretKey getOldSharedKey() {
-        return oldSharedKey;
-    }
-
-    public void setOldSharedKey(SecretKey oldSharedKey) {
-        this.oldSharedKey = oldSharedKey;
-    }
-
-    public SecretKey getNewMasterKey() {
-        return newMasterKey;
-    }
-
-    public void setNewMasterKey(SecretKey newMasterKey) {
-        this.newMasterKey = newMasterKey;
-    }
-
-    public Customer getSignedInCustomer() {
-        return signedInCustomer;
-    }
-
-    public void setSignedInCustomer(Customer signedInCustomer) {
-        this.signedInCustomer = signedInCustomer;
-    }
 
 
     public  boolean authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
+        signedInCustomer =null;
         try {
 
             Object fromClient;
@@ -210,6 +182,7 @@ public class ATMClient {
             String result = KeyCipher.objectToBase64String(processInfo);
 
             //Encrypt the object
+
             String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,result);
             //Add the MAC code
             String fromClient = encryptedResult+","+KeyCipher.createMAC(result,macKey);
@@ -224,7 +197,14 @@ public class ATMClient {
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
                         + (KeyCipher.isNumerical(originalMsg)?"Remaining balance: "+originalMsg:originalMsg));
 
-            }
+                //Updating the Customer reference on this end
+                if(KeyCipher.isNumerical(originalMsg)){
+                    signedInCustomer.setBankBalance(Double.parseDouble(originalMsg));
+                }
+
+            }//end of final message
+
+
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -258,7 +238,13 @@ public class ATMClient {
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
                         + (KeyCipher.isNumerical(originalMsg)?"New balance: "+originalMsg:originalMsg));
 
-            }
+                //Updating the Customer reference on this end
+                if(KeyCipher.isNumerical(originalMsg)){
+                    signedInCustomer.setBankBalance(Double.parseDouble(originalMsg));
+                    System.out.println("Bank balance: "+signedInCustomer.getBankBalance());
+                }
+
+            }//end of final message
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -315,6 +301,9 @@ public class ATMClient {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        System.out.println("The customers current balance is: "+signedInCustomer.getBankBalance());
+        System.out.println("The final balance is: "+finalBalance);
         return finalBalance;
     }//end of withdrawal
 

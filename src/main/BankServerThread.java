@@ -260,7 +260,7 @@ public class BankServerThread extends Thread {
                 //Covert back to ProcessInfo Object
                 ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
                 //Start operations
-                Customer c = p.getCustomer();
+                Customer c = findCustomer(p.getCustomer().getUsername()) ;
                 //General Withdrawal code
                 double balance = c.getBankBalance();
                 double withdraw = p.getAmount();
@@ -314,7 +314,7 @@ public class BankServerThread extends Thread {
                 //Covert back to ProcessInfo Object
                 ProcessInfo p = KeyCipher.convertToProcessInfo(decryptMessage);
                 //Start operations
-                Customer c = p.getCustomer();
+                Customer c = findCustomer(p.getCustomer().getUsername()) ;
                 //General Withdrawal code
                 double balance = c.getBankBalance();
                 double deposit = p.getAmount();
