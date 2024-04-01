@@ -1,6 +1,7 @@
 package main;
 
 import java.io.Serializable;
+import java.util.Random;
 
 public class Customer implements Serializable {
     // variables
@@ -49,5 +50,10 @@ public class Customer implements Serializable {
 
     public void setBankBalance(double bankBalance) {
         this.bankBalance = bankBalance;
+    }
+
+    public static int generateCustomerID(){
+
+        return new Random().nextInt(9000) + 1000;
     }
 }

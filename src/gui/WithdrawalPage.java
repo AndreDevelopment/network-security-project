@@ -14,11 +14,30 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import main.ATMClient;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class WithdrawalPage extends Application {
+    private ATMClient atmClient;
+    private Socket clientSocket;
 
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
+    public WithdrawalPage(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
+        this.atmClient = atmClient;
+        this.clientSocket = clientSocket;
+        this.out = out;
+        this.in = in;
+    }
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException{
+
+
         primaryStage.setTitle("WITHDRAWAL");
 
         // Creating a VBox layout for withdrawal page components
@@ -87,10 +106,19 @@ public class WithdrawalPage extends Application {
         withdrawalButton.setOnAction(e -> {
             // Print deposit to console
             String withdrawal = withdrawalMoneyField.getText();
+            //TO DO: Add label checking withdrawal and saying this amount cannot be withdrawn
             System.out.println("Withdrawal Amount: " + withdrawal);
-
+            try
+            {
+                //Executing the withdrawal process (ATM -> Bank)
+                out.writeObject("W");
+                atmClient.withdrawal(in, out, withdrawal);
+            } catch (IOException ex) {
+                System.out.println("If it reaches here, assume you got I/O hostname exception");
+                throw new RuntimeException(ex);
+            }
             // Keep the existing routing behavior to navigate to the home screen
-            HomePage homePage = new HomePage();
+            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
             homePage.start(homeStage);
             // Close the current stage (LoginPage)
@@ -143,11 +171,15 @@ public class WithdrawalPage extends Application {
     // Method to show the home page
     private void showLoginPage(Stage primaryStage) {
         LoginPage loginPage = new LoginPage();
-        loginPage.start(primaryStage);
+        try {
+            loginPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void showHomePage(Stage primaryStage) {
-        HomePage homePage = new HomePage();
+        HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
         homePage.start(primaryStage);
     }
 

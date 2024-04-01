@@ -15,73 +15,89 @@ import java.util.Scanner;
 
 public class ATMClient {
 
-    private static SecretKey oldSharedKey;
-    private static SecretKey newMasterKey,msgEncryptionKey,macKey;
+    private  SecretKey oldSharedKey;
+    private  SecretKey newMasterKey,msgEncryptionKey,macKey;
 
-    private static Customer signedInCustomer;
-    public static void main(String[] args) throws IOException {
+    private  Customer signedInCustomer;
 
+    public ATMClient() {
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
-        String hostName = "localhost";
-        int portNumber = Integer.parseInt("23456");
+    }
 
-        try (
-                Socket clientSocket = new Socket(hostName, portNumber);
 
-                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-        ) {
 
-            authenticateBankToATM(in, out);
 
-            createBothKeys();
-
-            authenticateCustomer(in, out);
-            //MAC("soon I'll be 60 years old", macKey, out);
-            withdrawal(in,out);
-
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                    hostName);
-            System.exit(1);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }// end of main
-
-    private static void authenticateCustomer(ObjectInputStream in, ObjectOutputStream out)  {
+    public  boolean authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
+        signedInCustomer =null;
         try {
-            Scanner input = new Scanner(System.in);
+
             Object fromClient;
             Object fromBankServer;
 
-            System.out.println("\nEnter your username: ");
-            String userName = input.nextLine();
-            System.out.println("Enter your password: ");
-            String password = input.nextLine();
-
-
-            fromClient = userName +","+password;
-
-            //Sending the Client public key
+            //Concat message
+            String msg = username +","+password;
+            //Encrypt & add MAC
+            fromClient = KeyCipher.encrypt(msgEncryptionKey,msg)+","+KeyCipher.createMAC(msg,macKey);
+            //Sending the user pass
             out.writeObject(fromClient);
 
             if ((fromBankServer = in.readObject()) != null) {
-                //System.out.println("Got the Customer Object!");
-                signedInCustomer = (Customer) fromBankServer;
+
+                //Expecting either a String "Bad" or an actual customer object
+                if (fromBankServer instanceof Customer)
+                    signedInCustomer = (Customer) fromBankServer;
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        //Since the customer will be null if not logged in properly I'm return that truth value
+        return signedInCustomer != null;
+
+    }//authenticate customer end
+
+    public void registerCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
+
+        Object fromBankServer,fromClient;
+
+        try {
 
 
-    }
+            String msg = username+","+password;
+            //Gotta encrypt :) & create MAC
+            String encryptedMsg = KeyCipher.encrypt(msgEncryptionKey,msg);
+            String macCode = KeyCipher.createMAC(msg,macKey);
 
-    private static void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out)  {
+            //concat both and send it off
+            fromClient = encryptedMsg+","+macCode;
+            out.writeObject(fromClient);
+            System.out.println("<-Sending customer info...");
+
+            if ((fromBankServer = in.readObject()) != null) {
+                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
+
+                String[] parts = ((String) fromBankServer).split(",");
+
+                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+parts[0]);
+                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+parts[1]);
+                //Decrypt
+                String originalMsg = KeyCipher.decrypt(msgEncryptionKey,parts[0]);
+                //Verify MAC
+                KeyCipher.extendedVerifyMAC(originalMsg,parts[1],macKey);
+
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+Colour.ANSI_RESET+originalMsg);
+            }
+
+
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }//end register customer
+
+    public void authenticateBankToATM(ObjectInputStream in, ObjectOutputStream out)  {
         try {
             Object fromBankServer;
             Object fromClient;
@@ -122,7 +138,7 @@ public class ATMClient {
             throw new RuntimeException(e);
         }
     }// end authenticate Bank to ATM
-    private static void MAC(String message, Key macKey, ObjectOutputStream out) {
+    private  void MAC(String message, Key macKey, ObjectOutputStream out) {
         try {
 
             // Encrypt the message and get MAC code
@@ -136,7 +152,7 @@ public class ATMClient {
         }
     }//end of MAC
 
-    public static void createBothKeys(){
+    public  void createBothKeys(){
         try {
             //Creating the two new keys
             byte[] info1 = "key_for_encryption".getBytes();
@@ -154,12 +170,55 @@ public class ATMClient {
 
     }
 
-    public static void withdrawal(ObjectInputStream in,ObjectOutputStream out){
+    public  void withdrawal(ObjectInputStream in,ObjectOutputStream out, String amount){
 
         Object fromBankServer;
-
+        double withdrawal_amount = Double.parseDouble(amount);
+        System.out.println(withdrawal_amount);
         try {
-            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,900);
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,withdrawal_amount);
+
+            //Covert to a string
+            String result = KeyCipher.objectToBase64String(processInfo);
+
+            //Encrypt the object
+
+            String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,result);
+            //Add the MAC code
+            String fromClient = encryptedResult+","+KeyCipher.createMAC(result,macKey);
+            //Send it off
+            out.writeObject(fromClient);
+            System.out.println("<-Sent a transaction...");
+
+            if ((fromBankServer = in.readObject()) != null) {
+                String originalMsg = getMsg((String) fromBankServer);
+
+                //Just checking if the reply message is a balance or a message
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
+                        + (KeyCipher.isNumerical(originalMsg)?"Remaining balance: "+originalMsg:originalMsg));
+
+                //Updating the Customer reference on this end
+                if(KeyCipher.isNumerical(originalMsg)){
+                    signedInCustomer.setBankBalance(Double.parseDouble(originalMsg));
+                }
+
+            }//end of final message
+
+
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }//end of withdrawal
+
+    public  void deposit(ObjectInputStream in,ObjectOutputStream out, String amount){
+
+        Object fromBankServer;
+        double deposit_amount = Double.parseDouble(amount);
+        System.out.println(deposit_amount);
+        try {
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,deposit_amount);
 
             //Covert to a string
             String result = KeyCipher.objectToBase64String(processInfo);
@@ -173,31 +232,79 @@ public class ATMClient {
             System.out.println("<-Sent a transaction...");
 
             if ((fromBankServer = in.readObject()) != null) {
-                System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
-                String[] parts = ((String) fromBankServer).split(",");
-                String encryptedRes = parts[0];
-                String recvMacCode = parts[1];
-
-                System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
-                System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
-                //Decrypt
-                String originalMsg = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
-
-                //Verify MAC
-                KeyCipher.extendedVerifyMAC(originalMsg,recvMacCode,macKey);
-                //Final print
+                String originalMsg = getMsg((String) fromBankServer);
 
                 //Just checking if the reply message is a balance or a message
                 System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET
-                        + (KeyCipher.isNumerical(originalMsg)?"Remaining balance: "+originalMsg:originalMsg));
+                        + (KeyCipher.isNumerical(originalMsg)?"New balance: "+originalMsg:originalMsg));
 
-            }
+                //Updating the Customer reference on this end
+                if(KeyCipher.isNumerical(originalMsg)){
+                    signedInCustomer.setBankBalance(Double.parseDouble(originalMsg));
+                    System.out.println("Bank balance: "+signedInCustomer.getBankBalance());
+                }
+
+            }//end of final message
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
+    }//end of deposit
 
+    private  String getMsg(String fromBankServer) {
+        System.out.println("\n"+Colour.ANSI_YELLOW+"RECEIVED FROM BANK: "+Colour.ANSI_RESET);
+        String[] parts = fromBankServer.split(",");
+        String encryptedRes = parts[0];
+        String recvMacCode = parts[1];
+
+        System.out.println(Colour.ANSI_RED+"->[ENCRYPTED]: "+Colour.ANSI_RESET+encryptedRes);
+        System.out.println(Colour.ANSI_PURPLE+"->[MAC]: "+Colour.ANSI_RESET+recvMacCode);
+        //Decrypt
+        String originalMsg = KeyCipher.decrypt(msgEncryptionKey,encryptedRes);
+
+        //Verify MAC
+        KeyCipher.extendedVerifyMAC(originalMsg,recvMacCode,macKey);
+        //Final print
+        return originalMsg;
+    }
+
+    public  String checkBalance(ObjectInputStream in,ObjectOutputStream out){
+
+        Object fromBankServer;
+
+        String finalBalance = "Bad balance";
+
+        try {
+                //Consider sending just the customer object?
+            ProcessInfo processInfo = new ProcessInfo(signedInCustomer,0);
+            //Covert to a string
+            String result = KeyCipher.objectToBase64String(processInfo);
+            //Encrypt the object
+            String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,result);
+            //Add the MAC code
+            String fromClient = encryptedResult+","+KeyCipher.createMAC(result,macKey);
+            //Send it off
+            out.writeObject(fromClient);
+            System.out.println("<-Sent a transaction...");
+
+            if ((fromBankServer = in.readObject()) != null) {
+                String originalMsg = getMsg((String) fromBankServer);
+                //Final print
+                finalBalance = originalMsg;
+                //Just checking if the reply message is a balance or a message
+                System.out.println(Colour.ANSI_CYAN+"->[DECRYPTED]: "+ Colour.ANSI_RESET + "Your balance: "+originalMsg);
+
+            }
+
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("The customers current balance is: "+signedInCustomer.getBankBalance());
+        System.out.println("The final balance is: "+finalBalance);
+        return finalBalance;
     }//end of withdrawal
 
 

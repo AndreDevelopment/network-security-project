@@ -14,9 +14,38 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import main.ATMClient;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 
 public class RegisterPage extends Application {
+
+    /*
+    * = new ATMClient();
+    * = new Socket(hostName, portNumber);
+    * = new ObjectOutputStream(clientSocket.getOutputStream());
+    * = new ObjectInputStream(clientSocket.getInputStream());
+    *             String hostName = "localhost";
+            int portNumber = Integer.parseInt("23456");
+    *
+    * */
+    private ATMClient atmClient;
+    private Socket clientSocket;
+
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
+    public RegisterPage(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
+        this.atmClient = atmClient;
+        this.clientSocket = clientSocket;
+        this.out = out;
+        this.in = in;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -72,13 +101,40 @@ public class RegisterPage extends Application {
             String name = nameField.getText();
             String reEnterPassBox = reEnterPassBoxField.getText();
 
-            System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
-            // Create an instance of LoginPage and show its stage
-            LoginPage loginPage = new LoginPage();
-            Stage loginStage = new Stage();
-            loginPage.start(loginStage);
-            // Close the current stage (RegisterPage)
-            primaryStage.close();
+            if (!password.equals(reEnterPassBox)) {
+                System.out.println("Please try again");
+            } else {
+
+                try {
+                    //Initial authentication
+                    out.writeObject("R");
+                    atmClient.registerCustomer(in, out, username, password);
+
+                } catch (UnknownHostException exp) {
+                    System.err.println("Don't know about host ");
+                    System.exit(1);
+                } catch (IOException ex) {
+                    System.err.println("Couldn't get I/O for the connection to ");
+                    System.exit(1);
+                } catch (Exception ex1) {
+                    throw new RuntimeException(ex1);
+                }//end of catch
+
+                System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
+                // Create an instance of LoginPage and show its stage
+                LoginPage loginPage = new LoginPage();
+                Stage loginStage = new Stage();
+                try {
+                    loginPage.start(loginStage);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                // Close the current stage (RegisterPage)
+                primaryStage.close();
+            }
+
+
+
         });
 
         // Creating an HBox to center the register button
@@ -108,9 +164,10 @@ public class RegisterPage extends Application {
     }
 
 
-
     public static void main(String[] args) {
         System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
         launch(args);
     }
+
+
 }

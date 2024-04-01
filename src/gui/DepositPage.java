@@ -14,11 +14,33 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import main.ATMClient;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class DepositPage extends Application {
 
+    private ATMClient atmClient;
+    private Socket clientSocket;
+
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
+    public DepositPage(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
+        this.atmClient = atmClient;
+        this.clientSocket = clientSocket;
+        this.out = out;
+        this.in = in;
+    }
+
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException{
+
+
+
         primaryStage.setTitle("DEPOSIT");
 
         // Creating a VBox layout for deposit page components
@@ -87,9 +109,23 @@ public class DepositPage extends Application {
             // Print deposit to console
             String deposit = depositMoneyField.getText();
             System.out.println("Deposit Amount: " + deposit);
+            try
+            {
+                //Executing the deposit process (ATM -> Bank)
+                out.writeObject("D");
+                atmClient.deposit(in, out, deposit);
+
+
+
+
+            } catch (IOException ex) {
+                System.out.println("If it reaches here, assume you got I/O hostname exception");
+                throw new RuntimeException(ex);
+            }
+
 
             // Keep the existing routing behavior to navigate to the home screen
-            HomePage homePage = new HomePage();
+            HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
             Stage homeStage = new Stage();
             homePage.start(homeStage);
             // Close the current stage (LoginPage)
@@ -143,12 +179,16 @@ public class DepositPage extends Application {
     // Method to show the login page
     private void showLoginPage(Stage primaryStage) {
         LoginPage loginPage = new LoginPage();
-        loginPage.start(primaryStage);
+        try {
+            loginPage.start(primaryStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Method to show the home page
     private void showHomePage(Stage primaryStage) {
-        HomePage homePage = new HomePage();
+        HomePage homePage = HomePage.getInstance(atmClient,clientSocket,out,in);
         homePage.start(primaryStage);
     }
 
