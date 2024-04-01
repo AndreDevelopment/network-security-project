@@ -24,40 +24,12 @@ public class ATMClient {
         oldSharedKey = KeyCipher.createSecretKey("thisismysecretkey24bytes");
     }
 
-    public SecretKey getMsgEncryptionKey() {
-        return msgEncryptionKey;
-    }
 
-    public SecretKey getMacKey() {
-        return macKey;
-    }
 
-    public SecretKey getOldSharedKey() {
-        return oldSharedKey;
-    }
-
-    public void setOldSharedKey(SecretKey oldSharedKey) {
-        this.oldSharedKey = oldSharedKey;
-    }
-
-    public SecretKey getNewMasterKey() {
-        return newMasterKey;
-    }
-
-    public void setNewMasterKey(SecretKey newMasterKey) {
-        this.newMasterKey = newMasterKey;
-    }
-
-    public Customer getSignedInCustomer() {
-        return signedInCustomer;
-    }
-
-    public void setSignedInCustomer(Customer signedInCustomer) {
-        this.signedInCustomer = signedInCustomer;
-    }
 
 
     public  boolean authenticateCustomer(ObjectInputStream in, ObjectOutputStream out,String username,String password)  {
+        signedInCustomer =null;
         try {
 
             Object fromClient;
