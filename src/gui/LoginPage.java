@@ -48,33 +48,7 @@ public class LoginPage extends Application {
         }
     }
 
-//    private static ATMClient atmClient;
-//    private static Socket clientSocket;
-//
-//    private static ObjectOutputStream out;
-//    private static ObjectInputStream in;
-//
-//    private static LoginPage instance;
-//
-//    public LoginPage() {
-//
-//    }
-//
-//    public static LoginPage getInstance(){
-//        if (instance==null) {
-//
-//            try {
-//                instance = new LoginPage();
-//                ATMClient atmClient = new ATMClient();
-//                Socket clientSocket = new Socket("localhost", 23456);
-//                ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
-//                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        return instance;
-//    }
+
 
     private static boolean hasAuthenticated = false;
 
@@ -193,23 +167,7 @@ public class LoginPage extends Application {
     }
 
 
-//    private void handleLogin(String username, String password) {
-//        System.out.println("Username: " + username);
-//        System.out.println("Password: " + password);
-//        // Add logic to verify login credentials and navigate to the next scene
-//    }
 
-//    private void handleRegister(Stage primaryStage) {
-//        RegisterPage registerPage = new RegisterPage();
-//        registerPage.start(primaryStage);
-//    }
-//
-//
-//
-//    private void showRegisterPage(Stage primaryStage) {
-//        RegisterPage registerPage = new RegisterPage();
-//        registerPage.start(primaryStage);
-//    }
 
     public static void main(String[] args) {
         //System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
