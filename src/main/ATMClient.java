@@ -210,6 +210,7 @@ public class ATMClient {
             String result = KeyCipher.objectToBase64String(processInfo);
 
             //Encrypt the object
+
             String encryptedResult = KeyCipher.encrypt(msgEncryptionKey,result);
             //Add the MAC code
             String fromClient = encryptedResult+","+KeyCipher.createMAC(result,macKey);

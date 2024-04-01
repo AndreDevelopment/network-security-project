@@ -39,10 +39,7 @@ public class DepositPage extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException{
 
-        ATMClient atmClient = new ATMClient();
-        Socket clientSocket = new Socket("localhost", 23456);
-        ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
 
         primaryStage.setTitle("DEPOSIT");
 
