@@ -27,12 +27,8 @@ public class LoginPage extends Application {
     private static ATMClient atmClient;
     private static Socket clientSocket;
     private static ObjectOutputStream out;
-
     private static ObjectInputStream in;
-
-
-
-
+    private static boolean hasAuthenticated = false;
 
     public LoginPage(){
         if (atmClient==null){
@@ -44,44 +40,12 @@ public class LoginPage extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
     }
-
-//    private static ATMClient atmClient;
-//    private static Socket clientSocket;
-//
-//    private static ObjectOutputStream out;
-//    private static ObjectInputStream in;
-//
-//    private static LoginPage instance;
-//
-//    public LoginPage() {
-//
-//    }
-//
-//    public static LoginPage getInstance(){
-//        if (instance==null) {
-//
-//            try {
-//                instance = new LoginPage();
-//                ATMClient atmClient = new ATMClient();
-//                Socket clientSocket = new Socket("localhost", 23456);
-//                ObjectOutputStream out =  new ObjectOutputStream(clientSocket.getOutputStream());
-//                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        return instance;
-//    }
-
-    private static boolean hasAuthenticated = false;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("LOGIN");
-
 
         AtomicBoolean isLoggedIn = new AtomicBoolean(false);
 
@@ -91,6 +55,7 @@ public class LoginPage extends Application {
             atmClient.createBothKeys();
             hasAuthenticated = true;
         }
+
         // Creating a VBox layout for login components
         VBox loginBox = new VBox();
         loginBox.setSpacing(20); // Increased spacing between components
@@ -116,26 +81,15 @@ public class LoginPage extends Application {
         Button loginButton = new Button("Login");
         loginButton.setStyle("-fx-background-color: #9acbff; -fx-min-width: 100px; -fx-min-height: 40px; -fx-font-weight: bold;"); // Setting style to adjust size, color, and text weight
         loginButton.setOnAction(e -> {
-            // Print username and password to console
-
-
-            //Executing the login process (ATM -> Bank)
             try {
                 String username = usernameField.getText();
                 String password = passwordField.getText();
-                //If login fails make a request again
-
                 out.writeObject("L");
                 isLoggedIn.set(atmClient.authenticateCustomer(in, out, username, password)); //T or F
-
-
             } catch (IOException ex) {
                 System.out.println("If it reaches here, assume you got I/O hostname exception");
                 throw new RuntimeException(ex);
             }
-
-
-            //System.out.println("Username: " + username + ", Password: " + password);
 
             // Keep the existing routing behavior to navigate to the home screen
             HomePage homePage = HomePage.getInstance(atmClient, clientSocket, out, in);
@@ -145,12 +99,11 @@ public class LoginPage extends Application {
                 // Close the current stage (LoginPage)
                 primaryStage.close();
             } else {
-
-                //TODO: This is where we would put the logic to create an error label
-                System.out.println("Login Failed! Please enter correct credentials!");
+                // Displaying login failed message in red
+                Label loginFailedLabel = new Label("Login Failed! Please enter correct credentials!");
+                loginFailedLabel.setTextFill(Color.RED);
+                loginBox.getChildren().add(loginFailedLabel);
             }
-
-
         });
 
         // Register button
@@ -188,36 +141,9 @@ public class LoginPage extends Application {
         Scene scene = new Scene(root, 800, 600); // Creating a scene with fixed size
         primaryStage.setScene(scene); // Setting the scene to the stage
         primaryStage.show(); // Showing the stage
-
-
     }
 
-
-//    private void handleLogin(String username, String password) {
-//        System.out.println("Username: " + username);
-//        System.out.println("Password: " + password);
-//        // Add logic to verify login credentials and navigate to the next scene
-//    }
-
-//    private void handleRegister(Stage primaryStage) {
-//        RegisterPage registerPage = new RegisterPage();
-//        registerPage.start(primaryStage);
-//    }
-//
-//
-//
-//    private void showRegisterPage(Stage primaryStage) {
-//        RegisterPage registerPage = new RegisterPage();
-//        registerPage.start(primaryStage);
-//    }
-
     public static void main(String[] args) {
-        //System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
         launch(args);
-
-
-        //Need to assess the flow of GUI
-
-
     }
 }

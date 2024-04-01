@@ -10,7 +10,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -22,23 +21,14 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-
 public class RegisterPage extends Application {
 
-    /*
-    * = new ATMClient();
-    * = new Socket(hostName, portNumber);
-    * = new ObjectOutputStream(clientSocket.getOutputStream());
-    * = new ObjectInputStream(clientSocket.getInputStream());
-    *             String hostName = "localhost";
-            int portNumber = Integer.parseInt("23456");
-    *
-    * */
     private ATMClient atmClient;
     private Socket clientSocket;
-
     private ObjectOutputStream out;
     private ObjectInputStream in;
+
+    private Label tryAgainLabel; // Declaring tryAgainLabel at the class level
 
     public RegisterPage(ATMClient atmClient, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
         this.atmClient = atmClient;
@@ -103,8 +93,8 @@ public class RegisterPage extends Application {
 
             if (!password.equals(reEnterPassBox)) {
                 System.out.println("Please try again");
+                tryAgainLabel.setVisible(true); // Show the label when passwords don't match
             } else {
-
                 try {
                     //Initial authentication
                     out.writeObject("R");
@@ -118,7 +108,7 @@ public class RegisterPage extends Application {
                     System.exit(1);
                 } catch (Exception ex1) {
                     throw new RuntimeException(ex1);
-                }//end of catch
+                }
 
                 System.out.println("Name: " + name + ", Username: " + username + ", Password: " + password + ", Re-Enter Password:" + reEnterPassBox);
                 // Create an instance of LoginPage and show its stage
@@ -132,15 +122,25 @@ public class RegisterPage extends Application {
                 // Close the current stage (RegisterPage)
                 primaryStage.close();
             }
-
-
-
         });
 
-        // Creating an HBox to center the register button
+        // Creating a label to show "Please try again" in red color
+        tryAgainLabel = new Label("Password did not match"); // Initializing tryAgainLabel
+        tryAgainLabel.setTextFill(Color.RED);
+        tryAgainLabel.setVisible(false); // Initially, hide the label
+
+        // Creating a StackPane to center the "Please try again" label
+        StackPane tryAgainPane = new StackPane();
+        tryAgainPane.getChildren().add(tryAgainLabel);
+        tryAgainPane.setAlignment(Pos.CENTER);
+
+        // Creating an HBox to center the register button and "Please try again" label
         HBox buttonBox = new HBox(registerButton);
         buttonBox.setAlignment(Pos.CENTER);
         registrationGrid.add(buttonBox, 0, 5, 2, 1); // Adding the register button to the grid
+
+        // Adding the tryAgainPane below the register button
+        registrationGrid.add(tryAgainPane, 0, 6, 2, 1); // Adding the label below the register button
 
         // Creating a blue background
         Rectangle blueBackground = new Rectangle(1000, 800, Color.web("#c6e2ff"));
@@ -163,11 +163,7 @@ public class RegisterPage extends Application {
         primaryStage.show(); // Showing the stage
     }
 
-
     public static void main(String[] args) {
-        System.setProperty("java.library.path", "C:\\javafx-sdk-22\\lib");
         launch(args);
     }
-
-
 }
